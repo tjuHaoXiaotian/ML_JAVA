@@ -14,10 +14,12 @@ import java.util.List;
 public class Main {
 
     public static void main(String [] args){
-        DecisionTree decisionTree = new DecisionTree();
+//        DecisionTree decisionTree = new DecisionTree();
+//
+////        System.out.println();
+//        decisionTree.trainForResult();
+//        System.out.println("正确率："+decisionTree.verification() + "%");
 
-//        System.out.println();
-        decisionTree.trainForResult();
-        System.out.println("正确率："+decisionTree.verification() + "%");
+        System.out.println(Runtime.getRuntime().availableProcessors());
     }
 }

@@ -13,8 +13,8 @@ public class Config {
     public static final int actionNum = 8;
 
     // 系统 agent 探索率
-    public static final double exploreRate = 0.7;
-    public static final double deltaExploreRate = 0.00015;
+    public static final double exploreRate = 0.8;
+    public static final double deltaExploreRate = 0.0009;
 
     // 系统 agent 学习率
     public static final double learningRate = 0.8;
@@ -27,7 +27,7 @@ public class Config {
     public static final int learningTimesAfterConnected = 10;
 
     // 系统每个 agent 连接建立与断开次数，达到则停止
-    public static final int eachConnectionTimes = 200;
+    public static final int eachConnectionTimes = 400;
 
     // 预期收敛到的 action
     public static final int expectedAction;

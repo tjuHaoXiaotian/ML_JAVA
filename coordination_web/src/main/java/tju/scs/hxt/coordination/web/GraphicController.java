@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import tju.scs.hxt.coordination.Config;
 import tju.scs.hxt.coordination.agent.Agent;
+import tju.scs.hxt.coordination.agent.StopThread;
 import tju.scs.hxt.coordination.web.entity.Network;
 import tju.scs.hxt.coordination.q.QItem;
 
@@ -38,25 +39,25 @@ public class GraphicController {
                 if(GlobalCache.getAgents(type) == null){
                     switch (type){
                         case 0:  // 网格结构
-                            GlobalCache.createGlobalCache(tju.scs.hxt.coordination.network.Network.generateGridNetworkAsList(6, 6,0),0);
+                            GlobalCache.createGlobalCache(tju.scs.hxt.coordination.network.Network.generateGridNetworkAsList(10, 6,0),0);
                             break;
                         case 1:  // regular
-                            GlobalCache.createGlobalCache(tju.scs.hxt.coordination.network.Network.generateRegularGraph(20, 4,1),1);
+                            GlobalCache.createGlobalCache(tju.scs.hxt.coordination.network.Network.generateRegularGraph(100, 4,1),1);
                             break;
                         case 2:  // random regular
-                            GlobalCache.createGlobalCache(tju.scs.hxt.coordination.network.Network.generateRandomRegularGraph(20, 4,2),2);
+                            GlobalCache.createGlobalCache(tju.scs.hxt.coordination.network.Network.generateRandomRegularGraph(100, 4,2),2);
                             break;
                         case 3:  // random
-                            GlobalCache.createGlobalCache(tju.scs.hxt.coordination.network.Network.generateRandomGraph(20, 0.3,3),3);
+                            GlobalCache.createGlobalCache(tju.scs.hxt.coordination.network.Network.generateRandomGraph(100, 0.3,3),3);
                             break;
                         case 4:  // small world
-                            GlobalCache.createGlobalCache(tju.scs.hxt.coordination.network.Network.generateSmallWorldGraph(20, 2, 0.6,4),4);
+                            GlobalCache.createGlobalCache(tju.scs.hxt.coordination.network.Network.generateSmallWorldGraph(100, 2, 0.6,4),4);
                             break;
                         case 5:  // scale free
-                            GlobalCache.createGlobalCache(tju.scs.hxt.coordination.network.Network.generateScaleFreeGraph(10, 1,5),5);
+                            GlobalCache.createGlobalCache(tju.scs.hxt.coordination.network.Network.generateScaleFreeGraph(100, 1,5),5);
                             break;
                         default: // small world
-                            GlobalCache.createGlobalCache(tju.scs.hxt.coordination.network.Network.generateSmallWorldGraph(20, 2, 0.6,4),6);
+                            GlobalCache.createGlobalCache(tju.scs.hxt.coordination.network.Network.generateSmallWorldGraph(100, 2, 0.6,4),6);
                             break;
                     }
                 }
@@ -86,6 +87,11 @@ public class GraphicController {
                         long startTime = System.currentTimeMillis();
                         // 打开起始门，放行所有线程
                         startGate.countDown();
+
+                        // 开始轮训线程：以判断整个agent网络是否收敛
+                        Thread stopThread = new StopThread(type);
+                        stopThread.start();
+
                         try {
                             endGate.await();
                         } catch (InterruptedException e) {
@@ -94,7 +100,8 @@ public class GraphicController {
 
                         long endTime = System.currentTimeMillis();
 
-                        System.out.println("运行了 "+(((double)(endTime - startTime)) / 1000)+" s");
+                        System.out.println("网络："+ type +" 运行了 "+(((double)(endTime - startTime)) / 1000)+" s");
+                        System.out.println("网络："+ type +" 平均 connection 次数 "+ GlobalCache.calMeanTrainingTimes(type));
                     }
                 });
                 thread.start();

@@ -43,6 +43,7 @@ public class Agent extends Node implements Runnable{
     private Lock connectionLock = new ReentrantLock();
 
     // 与不同agent的连接次数
+    @JsonIgnore
     private int connectionTimes = 0;
 
     // 统计此agent与所有邻居agent的合作信息
@@ -97,7 +98,6 @@ public class Agent extends Node implements Runnable{
         }
     }
 
-
     /**
      * 添加邻居agent发来的连接请求
      * @param request
@@ -118,31 +118,6 @@ public class Agent extends Node implements Runnable{
         agent.addRequest(new Request(this,agent,rowAction,columnAction,this.qValues[0][rowAction].getFmq(),this.qValues[1][columnAction].getFmq(),this.getCalPriority()));
     }
 
-    // 取出当前最好的 row：action, column:action
-    private int getBestRowAction(){
-        double maxValue = qValues[0][0].getFmq();
-        int maxAction = 0;
-        for(int i = 1; i < qValues[0].length;i++){
-            if(qValues[0][i].getFmq() > maxValue){
-                maxValue = qValues[0][i].getFmq();
-                maxAction = i;
-            }
-        }
-        return maxAction;
-    }
-
-    private int getBestColumnAction(){
-        double maxValue = qValues[1][0].getFmq();
-        int maxAction = 0;
-        for(int i = 1; i < qValues[1].length;i++){
-            if(qValues[1][i].getFmq() > maxValue){
-                maxValue = qValues[1][i].getFmq();
-                maxAction = i;
-            }
-        }
-        return maxAction;
-    }
-
     /**
      * 向所有邻居发起通信请求
      */
@@ -160,7 +135,6 @@ public class Agent extends Node implements Runnable{
         }
 
     }
-
 
     /**
      * 打印 Q Table
@@ -201,16 +175,27 @@ public class Agent extends Node implements Runnable{
         return true;
     }
 
+    /**
+     * 判断是否训练充足：是否达到既定轮数
+     * @return
+     */
     public boolean getEnoughTraining(){
         return connectionTimes >= Config.eachConnectionTimes;
     }
 
-    // action：priority
+    // action：priority 投票字典
     private Map<Integer,Double> counts = new HashMap<Integer, Double>();
 
+    /**
+     * 计算投票权重：agent权重与q-value 的线性组合
+     * @param priority
+     * @param fmq
+     * @return
+     */
     private double calWeightedProportion(double priority,double fmq){
         return 0.8 * priority + 0.2 * fmq;
     }
+
     /**
      * 简单统计加权投票排名信息，返回最大值
      * 加权信息：priority：fmqValue = 0.8:0.2
@@ -266,6 +251,7 @@ public class Agent extends Node implements Runnable{
             }
         }
 
+        // 统计最大投票信息
         maxPriority = 0;
         int maxAction = 0;
         for(Map.Entry<Integer,Double> entry:counts.entrySet()){
@@ -277,12 +263,17 @@ public class Agent extends Node implements Runnable{
         return maxAction;
     }
 
-
+    /**
+     * 更新附带权重信息
+     * @param positivePriority
+     */
     private void updateBoundedPriority(double positivePriority){
         this.setBoundedPriority((this.getBoundedPriority() * (this.connectionTimes-1) + positivePriority) / (this.connectionTimes));
     }
 
-    // 更新学习率
+    /**
+     * 更新学习率
+     */
     private void updateLearningRate(){
         this.learningRate -= Config.deltaLearningRate;
         if(this.learningRate < 0.1){
@@ -290,7 +281,9 @@ public class Agent extends Node implements Runnable{
         }
     }
 
-    // 更新探索率
+    /**
+     * 更新探索率
+     */
     private void updateExploreRate(){
         this.exploreRate -= Config.deltaExploreRate;
         if(this.exploreRate < 0.1){
@@ -312,7 +305,7 @@ public class Agent extends Node implements Runnable{
         // 投票选择（请求队列中）最优 action
         int maxRowAction = 0,maxColumnAction = 0;
         boolean checkNext = false;
-        while (!GlobalCache.isConverge(type)){
+        while (!GlobalCache.isConverge(type,false)){
             if(Config.printLog) 
                 System.out.println("agent"+getId() + " 没有收敛，继续训练...");
             if(connectionLock.tryLock()){ // 拿到了自己的锁，进而继续拿对方的通信锁。保证只有一个线程能够访问
@@ -325,7 +318,7 @@ public class Agent extends Node implements Runnable{
                         }
 
                         // 向邻居发起连接请求
-                        sendConnectionRequestToNeighbors(true);
+                        sendConnectionRequestToNeighbors(false);
                         // 进入 finally: 释放自己的连接锁。
                     }else{ // 队列中有请求，则审查是否可以建立连接
                         // TODO:加权投票，统计请求队列中的 action:priority 对儿
@@ -504,7 +497,7 @@ public class Agent extends Node implements Runnable{
                                     source.updateBoundedPriority(this.getPriority() * source.cooperationStatistics.get(this.getId()).getPositiveFrequency());
 
                                     // 发放更新通知：request
-                                    sendConnectionRequestToNeighbors(true);
+                                    sendConnectionRequestToNeighbors(false);
 
                                     request = requestQueue.poll();
                                     // TODO: learning finished...
@@ -526,7 +519,7 @@ public class Agent extends Node implements Runnable{
                         }
 
                         // 自己发起连接请求；
-                        sendConnectionRequestToNeighbors(true);
+                        sendConnectionRequestToNeighbors(false);
                     }
 
                     if(Config.printLog) 
@@ -565,6 +558,43 @@ public class Agent extends Node implements Runnable{
         return action;
     }
 
+    /**
+     * 取出当前最好的 row：action
+     * @return
+     */
+    public int getBestRowAction(){
+        int action = Config.getRandomNumber(0,actionNum-1);
+
+        double maxValue = qValues[0][action].getFmq();
+        int maxAction = action;
+        for(int i = 0; i < qValues[0].length;i++){
+            if(qValues[0][i].getFmq() > maxValue){
+                maxValue = qValues[0][i].getFmq();
+                maxAction = i;
+            }
+        }
+        return maxAction;
+    }
+
+    /**
+     * 取出当前最好的 column：action
+     * @return
+     */
+    public int getBestColumnAction(){
+        int action = Config.getRandomNumber(0,actionNum-1);
+
+        double maxValue = qValues[1][action].getFmq();
+        int maxAction = action;
+        for(int i = 0; i < qValues[1].length;i++){
+            if(qValues[1][i].getFmq() > maxValue){
+                maxValue = qValues[1][i].getFmq();
+                maxAction = i;
+            }
+        }
+        return maxAction;
+    }
+
+
 //    private int selectAction(int state){
 //        // 先随机选一个，防重复选择同一个action
 //        if(Math.random() < exploreRate){  // 随机探索
@@ -582,6 +612,11 @@ public class Agent extends Node implements Runnable{
 //        return action;
 //    }
 
+    /**
+     * 使用推荐的action进行 e-探索
+     * @param actionRecommended
+     * @return
+     */
     private int selectActionWithRecommended(int actionRecommended){
         if(Math.random() < exploreRate){  // 随机探索
             return Config.getRandomNumber(0,actionNum-1);
@@ -631,5 +666,9 @@ public class Agent extends Node implements Runnable{
 
     public QItem[][] getqValues() {
         return qValues;
+    }
+
+    public int getConnectionTimes(){
+        return connectionTimes;
     }
 }
