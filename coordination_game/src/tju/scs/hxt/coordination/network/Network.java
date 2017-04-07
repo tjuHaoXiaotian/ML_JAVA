@@ -28,8 +28,8 @@ public class Network {
      * @param colNum
      * @return
      */
-    public static List<Agent> generateGridNetworkAsList(int rowNum,int colNum){
-        Agent[][] parameter = generateGridNetwork(rowNum,colNum);
+    public static List<Agent> generateGridNetworkAsList(int rowNum,int colNum,int type){
+        Agent[][] parameter = generateGridNetwork(rowNum,colNum,type);
         List<Agent> agents = new ArrayList<Agent>(rowNum * colNum);
         for(int i = 0; i < parameter.length;i++){
             for(int j = 0; j < parameter[i].length;j++){
@@ -46,11 +46,11 @@ public class Network {
      * @param colNum 网格列数
      * @return
      */
-    public static Agent[][] generateGridNetwork(int rowNum,int colNum){
+    public static Agent[][] generateGridNetwork(int rowNum,int colNum,int type){
         Agent[][] nodes = new Agent[rowNum][colNum];
         for(int i = 0; i < rowNum;i++){
             for(int j = 0; j < colNum; j++){
-                nodes[i][j] = new Agent(i * colNum + j,Config.actionNum,Config.exploreRate,Config.learningRate,rowNum*colNum);
+                nodes[i][j] = new Agent(i * colNum + j,Config.actionNum,Config.exploreRate,Config.learningRate,type,rowNum*colNum);
             }
         }
 
@@ -101,8 +101,8 @@ public class Network {
      * @param neighborNum 规则网络的相邻邻居数 （此处最好为偶数）
      * @return
      */
-    public static List<Agent> generateRegularGraph(int nodesNum,int neighborNum){
-        return generateRegularGraph(nodesNum,neighborNum,-1);
+    public static List<Agent> generateRegularGraph(int nodesNum,int neighborNum,int type){
+        return generateRegularGraph(nodesNum,neighborNum,type,-1);
     }
 
 
@@ -113,12 +113,12 @@ public class Network {
      * @param totalNum 整体网络的结点个数，保证各个agent权值计算的正确性
      * @return
      */
-    private static List<Agent> generateRegularGraph(int nodesNum,int neighborNum,int totalNum){
+    private static List<Agent> generateRegularGraph(int nodesNum,int neighborNum,int type,int totalNum){
         neighborNum = neighborNum / 2;
         // 1：添加节点
         List<Agent> linkedAgents = new ArrayList<Agent>(nodesNum);
         for(int i = 0; i < nodesNum;i++){
-            linkedAgents.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,totalNum > nodesNum?totalNum:nodesNum));
+            linkedAgents.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,type,totalNum > nodesNum?totalNum:nodesNum));
         }
 
         Agent me,neighbor;
@@ -143,12 +143,12 @@ public class Network {
      * @param neighborNum 规则网络的相邻邻居数
      * @return
      */
-    public static List<Agent> generateRandomRegularGraph(int nodesNum,int neighborNum){
+    public static List<Agent> generateRandomRegularGraph(int nodesNum,int neighborNum,int type){
 
         // 1：生成 nodesNum 个网络节点
         List<Agent> groupWithoutLink = new LinkedList<Agent>();
         for(int i = 0; i < nodesNum;i++){
-            groupWithoutLink.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,nodesNum));
+            groupWithoutLink.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,type,nodesNum));
         }
 
         List<Agent> linkedAgents = new ArrayList<Agent>(nodesNum);
@@ -199,12 +199,12 @@ public class Network {
      * @param nodesNum 网络节点数目
      * @return
      */
-    public static List<Agent> generateRandomGraph(int nodesNum,double p){
+    public static List<Agent> generateRandomGraph(int nodesNum,double p,int type){
 
         // 1：生成 nodesNum 个网络节点
         List<Agent> groupWithoutLink = new LinkedList<Agent>();
         for(int i = 0; i < nodesNum;i++){
-            groupWithoutLink.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,nodesNum));
+            groupWithoutLink.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,type,nodesNum));
         }
 
         List<Agent> linkedAgents = new ArrayList<Agent>(nodesNum);
@@ -246,8 +246,8 @@ public class Network {
      * @param p  以概率 p 重连
      * @return
      */
-    public static List<Agent> generateSmallWorldGraph(int nodesNum,int neighborNum,double p){
-        return generateSmallWorldGraph(nodesNum,neighborNum,p,-1);
+    public static List<Agent> generateSmallWorldGraph(int nodesNum,int neighborNum,double p,int type){
+        return generateSmallWorldGraph(nodesNum,neighborNum,p,type,-1);
     }
 
     /**
@@ -260,9 +260,9 @@ public class Network {
      * @param totalNum 整体网络的结点个数，保证各个agent权值计算的正确性
      * @return
      */
-    private static List<Agent> generateSmallWorldGraph(int nodesNum,int neighborNum,double p,int totalNum){
+    private static List<Agent> generateSmallWorldGraph(int nodesNum,int neighborNum,double p,int type,int totalNum){
         // 1: 生成规则网络
-        List<Agent> nodes = generateRegularGraph(nodesNum,neighborNum,totalNum);
+        List<Agent> nodes = generateRegularGraph(nodesNum,neighborNum,type,totalNum);
         neighborNum = neighborNum / 2;
 
         Agent me,neighbor,relinkNeighbor;
@@ -301,16 +301,16 @@ public class Network {
      * @param m 每增加一个节点，向原始网络中添加 m 条边
      * @return
      */
-    public static List<Agent> generateScaleFreeGraph(int nodesNum,int m){
+    public static List<Agent> generateScaleFreeGraph(int nodesNum,int m,int type){
         int smallWordAgents = 4;
         if(nodesNum > 10){
             smallWordAgents = 10;
         }
-        List<Agent> nodes = generateSmallWorldGraph(smallWordAgents,2,0.6,nodesNum);  // 以此参数生成 small word 网络
+        List<Agent> nodes = generateSmallWorldGraph(smallWordAgents,2,0.6,type,nodesNum);  // 以此参数生成 small word 网络
         int gapNum = nodesNum - smallWordAgents,gapLink = m,totalDegree = calTotalDegree(nodes);
         Agent newAgent = null,oldAgent = null;
         while (gapNum > 0){  // 依次添加节点
-            newAgent = new Agent(smallWordAgents++,Config.actionNum,Config.exploreRate,Config.learningRate,nodesNum);
+            newAgent = new Agent(smallWordAgents++,Config.actionNum,Config.exploreRate,Config.learningRate,type,nodesNum);
             gapLink = m;
             while (gapLink > 0){  // 为每个新节点，添加
                 // 随机选择一个旧的节点
@@ -347,7 +347,7 @@ public class Network {
 //            }
 //        }
 
-        System.out.println(generateRandomRegularGraph(30,4));
+        System.out.println(generateRandomRegularGraph(30,4,1));
 //        System.out.println(generateRegularGraph(10,10));
 //        System.out.println(generateRandomGraph(10, 0.2));
 //        System.out.println(generateSmallWorldGraph(10,2, 0.6));

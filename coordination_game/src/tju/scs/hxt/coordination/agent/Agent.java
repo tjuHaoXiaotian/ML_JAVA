@@ -5,6 +5,7 @@ import tju.scs.hxt.coordination.Config;
 import tju.scs.hxt.coordination.network.Node;
 import tju.scs.hxt.coordination.q.QItem;
 import tju.scs.hxt.coordination.queue.BoundedPriorityBlockingQueue;
+import tju.scs.hxt.coordination.web.GlobalCache;
 
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -24,11 +25,15 @@ public class Agent extends Node implements Runnable{
     // 定义game 比较规整，简单；2 player,n-action game;
     private final int actionNum; // 每个 state 下的 action num
 
+
+    @JsonIgnore
     private final QItem[][] qValues; // Q Table
 
-    private final double exploreRate; // 探索速率
+    private double exploreRate; // 探索速率
 
-    private final double learningRate; // 学习速率
+    private double learningRate; // 学习速率
+
+    private final int type; // 所属的网络种类
 
 
     // 请求队列
@@ -40,27 +45,22 @@ public class Agent extends Node implements Runnable{
     // 与不同agent的连接次数
     private int connectionTimes = 0;
 
-    private CurrentWindow currentWindow;
+    // 统计此agent与所有邻居agent的合作信息
+    private Map<Integer,Statistics> cooperationStatistics = new HashMap<Integer, Statistics>();
 
-    public Agent(int id,int actionNum, double exploreRate, double learningRate,int nodeNum) {
+    public Agent(int id,int actionNum, double exploreRate, double learningRate,int type,int nodeNum) {
         super(id,nodeNum);
         this.actionNum = actionNum;
         this.exploreRate = exploreRate;
         this.learningRate = learningRate;
         this.qValues = new QItem[stateNum][actionNum];
-
+        this.type = type;
         // 初始化 q tables
         initTables();
 
         // 初始化请求队列
 //        initRequestQueue(true);
         initRequestQueue(false);
-
-    }
-
-    // 初始化当前窗口
-    private void initCurrentWindow(){
-        currentWindow = new CurrentWindow();
     }
 
     // 初始化 Q Table
@@ -115,7 +115,7 @@ public class Agent extends Node implements Runnable{
     private void sendConnectionRequest(Agent agent){
         // 默认策略，越新的位置越靠前，及优先考虑当前最新的连接请求。
         int rowAction = getBestRowAction(),columnAction = getBestColumnAction();
-        agent.addRequest(new Request(this,agent,rowAction,columnAction,this.qValues[0][rowAction].getFmq(),this.qValues[1][columnAction].getFmq(),currentWindow.requestPriority));
+        agent.addRequest(new Request(this,agent,rowAction,columnAction,this.qValues[0][rowAction].getFmq(),this.qValues[1][columnAction].getFmq(),this.getCalPriority()));
     }
 
     // 取出当前最好的 row：action, column:action
@@ -149,7 +149,7 @@ public class Agent extends Node implements Runnable{
     private void sendConnectionRequestToNeighbors(boolean higherOnly){
         if(higherOnly){  // 1:只向更高级别的 agent 发送请求
             for(Node neighbor:this.getNeighbors()){
-                if(neighbor.getPriority() > this.getPriority()){
+                if(neighbor.getCalPriority() > this.getCalPriority()){
                     sendConnectionRequest((Agent)neighbor);
                 }
             }
@@ -201,7 +201,7 @@ public class Agent extends Node implements Runnable{
         return true;
     }
 
-    private boolean getEnoughTraining(){
+    public boolean getEnoughTraining(){
         return connectionTimes >= Config.eachConnectionTimes;
     }
 
@@ -277,13 +277,31 @@ public class Agent extends Node implements Runnable{
         return maxAction;
     }
 
+
+    private void updateBoundedPriority(double positivePriority){
+        this.setBoundedPriority((this.getBoundedPriority() * (this.connectionTimes-1) + positivePriority) / (this.connectionTimes));
+    }
+
+    // 更新学习率
+    private void updateLearningRate(){
+        this.learningRate -= Config.deltaLearningRate;
+        if(this.learningRate < 0.1){
+            this.learningRate = 0.1;
+        }
+    }
+
+    // 更新探索率
+    private void updateExploreRate(){
+        this.exploreRate -= Config.deltaExploreRate;
+        if(this.exploreRate < 0.1){
+            this.exploreRate = 0.1;
+        }
+    }
+
     /**
      * agent 训练
      */
     private void training() throws InterruptedException {
-        // 初始化当前窗口
-        initCurrentWindow();
-
         Request request = null;
         Agent source = null;
         double reward = 0;
@@ -294,7 +312,7 @@ public class Agent extends Node implements Runnable{
         // 投票选择（请求队列中）最优 action
         int maxRowAction = 0,maxColumnAction = 0;
         boolean checkNext = false;
-        while (!isConvergence()){
+        while (!GlobalCache.isConverge(type)){
             if(Config.printLog) 
                 System.out.println("agent"+getId() + " 没有收敛，继续训练...");
             if(connectionLock.tryLock()){ // 拿到了自己的锁，进而继续拿对方的通信锁。保证只有一个线程能够访问
@@ -319,6 +337,15 @@ public class Agent extends Node implements Runnable{
                                 // 获取到了锁
                                 // TODO: learning...
 
+                                // 记录统计信息
+                                if(this.cooperationStatistics.get(source.getId()) == null){
+                                    this.cooperationStatistics.put(source.getId(),new Statistics(0,0));
+                                }
+
+                                if(source.cooperationStatistics.get(this.getId()) == null){
+                                    source.cooperationStatistics.put(this.getId(),new Statistics(0,0));
+                                }
+
                                 try{
                                     learningTimes = 0;
                                     while (learningTimes < Config.learningTimesAfterConnected){
@@ -334,6 +361,28 @@ public class Agent extends Node implements Runnable{
                                         columnAction = source.selectAction(1); // 对方是 column player
 //                                        columnAction = source.selectActionWithRecommended(maxColumnAction); // 对方是 column player
                                         reward = Config.rewards[rowAction][columnAction];
+
+                                        // 记录统计信息
+                                        this.cooperationStatistics.get(source.getId()).increaseTotal();
+                                        source.cooperationStatistics.get(this.getId()).increaseTotal();
+
+                                        if(reward > 0){
+                                            this.cooperationStatistics.get(source.getId()).increasePositive();
+                                            source.cooperationStatistics.get(this.getId()).increasePositive();
+
+//                                            // 更新各自权重
+////                                            this.setPriority(this.getPriority() + source.getPriority() * this.cooperationStatistics.get(source.getId()).getPositiveFrequency());
+//                                            this.setPriority(this.getPriority() + 1 * this.cooperationStatistics.get(source.getId()).getPositiveFrequency());
+////                                            source.setPriority(source.getPriority() + this.getPriority() * source.cooperationStatistics.get(this.getId()).getPositiveFrequency());
+//                                            source.setPriority(source.getPriority() + 1 * source.cooperationStatistics.get(this.getId()).getPositiveFrequency());
+                                        }else{
+                                            // 更新各自权重
+//                                            this.setPriority(this.getPriority() - source.getPriority() * this.cooperationStatistics.get(source.getId()).getNegativeFrequency());
+//                                            source.setPriority(source.getPriority() - this.getPriority() * source.cooperationStatistics.get(this.getId()).getNegativeFrequency());
+                                        }
+
+//                                        System.out.println(this.getPriority());
+
                                         // 1: 更新各自 Q table
                                         qValues[0][rowAction].setqValue((1 - learningRate) *  qValues[0][rowAction].getqValue() + learningRate * reward);
                                         source.qValues[1][columnAction].setqValue((1 - source.learningRate) *  source.qValues[1][columnAction].getqValue() + source.learningRate * reward);
@@ -374,6 +423,26 @@ public class Agent extends Node implements Runnable{
                                         rowAction = source.selectAction(0); // 对方是 row player
 //                                        rowAction = source.selectActionWithRecommended(maxRowAction); // 对方是 row player
                                         reward = Config.rewards[rowAction][columnAction];
+
+                                        // 记录统计信息
+                                        this.cooperationStatistics.get(source.getId()).increaseTotal();
+                                        source.cooperationStatistics.get(this.getId()).increaseTotal();
+
+                                        if(reward > 0){
+                                            this.cooperationStatistics.get(source.getId()).increasePositive();
+                                            source.cooperationStatistics.get(this.getId()).increasePositive();
+
+//                                            // 更新各自权重
+////                                            this.setPriority(this.getPriority() + source.getPriority() * this.cooperationStatistics.get(source.getId()).getPositiveFrequency());
+//                                            this.setPriority(this.getPriority() + 1 * this.cooperationStatistics.get(source.getId()).getPositiveFrequency());
+////                                            source.setPriority(source.getPriority() + this.getPriority() * source.cooperationStatistics.get(this.getId()).getPositiveFrequency());
+//                                            source.setPriority(source.getPriority() + 1 * source.cooperationStatistics.get(this.getId()).getPositiveFrequency());
+                                        }else{
+                                            // 更新各自权重
+//                                            this.setPriority(this.getPriority() - source.getPriority() * this.cooperationStatistics.get(source.getId()).getNegativeFrequency());
+//                                            source.setPriority(source.getPriority() - this.getPriority() * source.cooperationStatistics.get(this.getId()).getNegativeFrequency());
+                                        }
+
                                         // 1: 更新各自 Q table
                                         qValues[1][columnAction].setqValue((1 - learningRate) *  qValues[1][columnAction].getqValue() + learningRate * reward);
                                         source.qValues[0][rowAction].setqValue((1 - source.learningRate) *  source.qValues[0][rowAction].getqValue() + source.learningRate * reward);
@@ -420,9 +489,22 @@ public class Agent extends Node implements Runnable{
                                     connectionTimes++;
                                     source.connectionTimes++;
 
-                                    // 更新各自窗口的权重
-                                    currentWindow.updateRequestPriority(source.getPriority());
-                                    source.currentWindow.updateRequestPriority(this.getPriority());
+                                    // 更新学习率
+                                    updateLearningRate();
+
+                                    // 更新探索率
+                                    updateExploreRate();
+
+                                    // 更新各自的权重
+//                                    this(source.getPriority());
+//                                    source.currentWindow.updateRequestPriority(this.getPriority());
+
+                                    // 更新各自附加权重
+                                    this.updateBoundedPriority(source.getPriority() * this.cooperationStatistics.get(source.getId()).getPositiveFrequency());
+                                    source.updateBoundedPriority(this.getPriority() * source.cooperationStatistics.get(this.getId()).getPositiveFrequency());
+
+                                    // 发放更新通知：request
+                                    sendConnectionRequestToNeighbors(true);
 
                                     request = requestQueue.poll();
                                     // TODO: learning finished...
@@ -467,31 +549,14 @@ public class Agent extends Node implements Runnable{
      * @param state
      * @return
      */
-//    private int selectAction(int state){
-//        // 先随机选一个，防重复选择同一个action
-//        int action = Config.getRandomNumber(0,actionNum-1);
-//        if(Math.random() < exploreRate){  // 随机探索
-//            return action;
-//        }
-//        double maxValue = qValues[state][action].getFmq();
-//        for(int i = 0; i < actionNum;i++){
-//            if(qValues[state][i].getFmq() > maxValue){
-//                maxValue = qValues[state][i].getFmq();
-//                action = i;
-//            }
-//        }
-//        return action;
-//    }
-
     private int selectAction(int state){
         // 先随机选一个，防重复选择同一个action
+        int action = Config.getRandomNumber(0,actionNum-1);
         if(Math.random() < exploreRate){  // 随机探索
-            return Config.getRandomNumber(0,actionNum-1);
+            return action;
         }
-        // 从第 0 个开始遍历
-        int action = 0;
         double maxValue = qValues[state][action].getFmq();
-        for(int i = 1; i < actionNum;i++){
+        for(int i = 0; i < actionNum;i++){
             if(qValues[state][i].getFmq() > maxValue){
                 maxValue = qValues[state][i].getFmq();
                 action = i;
@@ -499,6 +564,23 @@ public class Agent extends Node implements Runnable{
         }
         return action;
     }
+
+//    private int selectAction(int state){
+//        // 先随机选一个，防重复选择同一个action
+//        if(Math.random() < exploreRate){  // 随机探索
+//            return Config.getRandomNumber(0,actionNum-1);
+//        }
+//        // 从第 0 个开始遍历
+//        int action = 0;
+//        double maxValue = qValues[state][action].getFmq();
+//        for(int i = 1; i < actionNum;i++){
+//            if(qValues[state][i].getFmq() > maxValue){
+//                maxValue = qValues[state][i].getFmq();
+//                action = i;
+//            }
+//        }
+//        return action;
+//    }
 
     private int selectActionWithRecommended(int actionRecommended){
         if(Math.random() < exploreRate){  // 随机探索
@@ -549,22 +631,5 @@ public class Agent extends Node implements Runnable{
 
     public QItem[][] getqValues() {
         return qValues;
-    }
-
-
-    private class CurrentWindow{
-        // 请求的优先级（累积平均值）
-        private double requestPriority;
-
-        public CurrentWindow() {
-            this.requestPriority = Agent.this.getPriority();
-        }
-
-        private void updateRequestPriority(int neighborPriority,boolean positiveReward){
-//            requestPriority = ((Agent.this.connectionTimes) * requestPriority + neighborPriority) / (Agent.this.connectionTimes + 1);
-
-            if(Config.printLog) 
-                System.out.println(Agent.this.getId() + ": window:requestPriority: " + requestPriority);
-        }
     }
 }

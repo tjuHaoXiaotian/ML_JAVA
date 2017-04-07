@@ -1,4 +1,4 @@
-package tju.scs.hxt.coordination.entity;
+package tju.scs.hxt.coordination.web.entity;
 
 import tju.scs.hxt.coordination.network.Node;
 

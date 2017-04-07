@@ -38,7 +38,7 @@ public class Main {
          * 其他网络
          */
         int agentSize = 30;
-        List<Agent> agents = Network.generateSmallWorldGraph(agentSize,2,0.6);
+        List<Agent> agents = Network.generateSmallWorldGraph(agentSize,2,0.6,4);
         final CountDownLatch startGate = new CountDownLatch(1);
         final CountDownLatch endGate = new CountDownLatch(agentSize);
         Thread thread = null;

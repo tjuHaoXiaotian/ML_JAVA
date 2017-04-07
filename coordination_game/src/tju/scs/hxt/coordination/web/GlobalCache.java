@@ -1,10 +1,9 @@
-package tju.scs.hxt.coordination;
+package tju.scs.hxt.coordination.web;
 
 import tju.scs.hxt.coordination.agent.Agent;
-import tju.scs.hxt.coordination.entity.Network;
+import tju.scs.hxt.coordination.web.entity.Network;
 import tju.scs.hxt.coordination.network.Node;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -50,5 +49,15 @@ public class GlobalCache {
 
     public static void setRunningState(boolean runningState,int type) {
         GlobalCache.runningState[type] = runningState;
+    }
+
+    public static boolean isConverge(int type){
+        for(Agent agent:agents[type]){
+            if(!agent.getEnoughTraining()){
+                return false;
+            }
+        }
+
+        return true;
     }
 }

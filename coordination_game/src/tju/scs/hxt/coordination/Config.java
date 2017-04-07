@@ -13,10 +13,12 @@ public class Config {
     public static final int actionNum = 8;
 
     // 系统 agent 探索率
-    public static final double exploreRate = 0.8;
+    public static final double exploreRate = 0.7;
+    public static final double deltaExploreRate = 0.00015;
 
     // 系统 agent 学习率
     public static final double learningRate = 0.8;
+    public static final double deltaLearningRate = 0.0001;
 
     // 系统 reward 设定
     public static final double [][] rewards;
@@ -35,6 +37,8 @@ public class Config {
 
     // agent 请求队列 长度
     public static final int requestQueueLength = 10;
+
+
 
     static {
         rewards = new double[actionNum][actionNum];

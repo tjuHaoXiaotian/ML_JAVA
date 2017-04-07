@@ -24,7 +24,7 @@ public class TestQueue {
 //        boundedPriorityBlockingQueue.add(3);
 
         for(int i = 1; i < 10;i ++){
-            boundedPriorityBlockingQueue.add(new Request(new Agent(1,2,3,4,2),new Agent(2,2,3,4,2),1,1,1,1,i));
+            boundedPriorityBlockingQueue.add(new Request(new Agent(1,2,3,4,0,2),new Agent(2,2,3,4,0,2),1,1,1,1,i));
         }
 
         Request ele;
