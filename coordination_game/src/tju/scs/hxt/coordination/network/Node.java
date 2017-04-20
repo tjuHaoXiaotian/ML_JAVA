@@ -17,11 +17,7 @@ public class Node {
     private double priority;
 
     // 邻居的平均权值
-    private double boundedPriority;
-
-    // 网络中节点的总个数
-    @JsonIgnore
-    private int totalNodes;
+    private double linkedPriority;
 
     @JsonIgnore
     private List<Integer> neighborsId;
@@ -36,9 +32,8 @@ public class Node {
     public Node() {
     }
 
-    public Node(int id,int totalNodes) {
+    public Node(int id) {
         this.id = id;
-        this.totalNodes = totalNodes;
         neighbors = new ArrayList<Node>();
     }
 
@@ -82,8 +77,9 @@ public class Node {
      * 当成员数量变动时，更新优先级
      */
     private void updatePriority(){
-        this.priority = totalNodes * getNeighborsSize() + id;
+//        this.priority = totalNodes * getNeighborsSize() + id;
 //        this.priority = getNeighborsSize() + ((double)id)/totalNodes;
+        this.priority = getNeighborsSize();
     }
 
     /**
@@ -91,7 +87,7 @@ public class Node {
      * @return
      */
     public double getCalPriority(){
-        return getPriority() + getBoundedPriority();
+        return getPriority() + getLinkedPriority();
     }
 
     private void addNeighborId(int id){
@@ -165,11 +161,11 @@ public class Node {
         this.priority = priority;
     }
 
-    public double getBoundedPriority() {
-        return boundedPriority;
+    public double getLinkedPriority() {
+        return linkedPriority;
     }
 
-    public void setBoundedPriority(double boundedPriority) {
-        this.boundedPriority = boundedPriority;
+    public void setLinkedPriority(double linkedPriority) {
+        this.linkedPriority = linkedPriority;
     }
 }

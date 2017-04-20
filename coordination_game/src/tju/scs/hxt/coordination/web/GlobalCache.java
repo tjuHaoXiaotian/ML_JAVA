@@ -27,13 +27,33 @@ public class GlobalCache {
     private static boolean[] runningState = new boolean[6];
 
     private final static Object lock = new Object();
+    private final static Object lock1 = new Object();
+    private final static Object lock2 = new Object();
+    private final static Object lock3 = new Object();
+    private final static Object lock4 = new Object();
+    private final static Object lock5 = new Object();
 
-    public static Object getLock(){
-        return lock;
+    public static Object getLock(int type){
+        switch (type){
+            case 0:
+                return lock;
+            case 1:
+                return lock1;
+            case 2:
+                return lock2;
+            case 3:
+                return lock3;
+            case 4:
+                return lock4;
+            case 5:
+                return lock5;
+            default:
+                return lock;
+        }
     }
 
     public static void createGlobalCache(List<Agent> parameter,int type){
-            synchronized (lock){
+            synchronized (getLock(type)){
                 if(agents[type] == null){
                     GlobalCache.agents[type] = parameter;
                     networks[type] = new Network();
@@ -112,18 +132,25 @@ public class GlobalCache {
         switch (type){
             case 0:
                 converge_0 = true;
+                break;
             case 1:
                 converge_1 = true;
+                break;
             case 2:
                 converge_2 = true;
+                break;
             case 3:
                 converge_3 = true;
+                break;
             case 4:
                 converge_4 = true;
+                break;
             case 5:
                 converge_5 = true;
+                break;
             default:
                 converge_4 = true;
+                break;
         }
         System.out.println("type:" + type + " set converge = true.");
     }

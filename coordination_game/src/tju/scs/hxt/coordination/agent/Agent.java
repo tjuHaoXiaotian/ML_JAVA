@@ -25,7 +25,6 @@ public class Agent extends Node implements Runnable{
     // 定义game 比较规整，简单；2 player,n-action game;
     private final int actionNum; // 每个 state 下的 action num
 
-
     @JsonIgnore
     private final QItem[][] qValues; // Q Table
 
@@ -34,7 +33,6 @@ public class Agent extends Node implements Runnable{
     private double learningRate; // 学习速率
 
     private final int type; // 所属的网络种类
-
 
     // 请求队列
     private AbstractQueue<Request> requestQueue;
@@ -49,8 +47,8 @@ public class Agent extends Node implements Runnable{
     // 统计此agent与所有邻居agent的合作信息
     private Map<Integer,Statistics> cooperationStatistics = new HashMap<Integer, Statistics>();
 
-    public Agent(int id,int actionNum, double exploreRate, double learningRate,int type,int nodeNum) {
-        super(id,nodeNum);
+    public Agent(int id,int actionNum, double exploreRate, double learningRate,int type) {
+        super(id);
         this.actionNum = actionNum;
         this.exploreRate = exploreRate;
         this.learningRate = learningRate;
@@ -121,7 +119,7 @@ public class Agent extends Node implements Runnable{
     /**
      * 向所有邻居发起通信请求
      */
-    private void sendConnectionRequestToNeighbors(boolean higherOnly){
+    public void sendConnectionRequestToNeighbors(boolean higherOnly){
         if(higherOnly){  // 1:只向更高级别的 agent 发送请求
             for(Node neighbor:this.getNeighbors()){
                 if(neighbor.getCalPriority() > this.getCalPriority()){
@@ -134,45 +132,6 @@ public class Agent extends Node implements Runnable{
             }
         }
 
-    }
-
-    /**
-     * 打印 Q Table
-     */
-    public void printQTable(){
-        if(Config.printLog) {
-            System.out.println("==================================== agent"+getId()+" Q TABLE=========================================");
-            System.out.println("agent"+getId()+" update q table " + connectionTimes +" times.");
-            for(int i = 0; i < stateNum; i++){
-                for(int j = 0; j < actionNum; j++){
-                    if(j == Config.expectedAction){
-                        System.out.print(" ["+qValues[i][j].getFmq() + "] ");
-                    }else{
-                        System.out.print("  "+qValues[i][j].getFmq() + "  ");
-                    }
-
-                }
-                System.out.println();
-            }
-            System.out.println("   ===========================================Q TABLE===========================================");
-            System.out.println();
-        }
-    }
-
-    /**
-     * TODO :判断当前agent是否已经收敛；当前agent相邻的agent是否收敛
-     * @return
-     */
-    private boolean isConvergence(){
-        for(Node neighbor:this.getNeighbors()){
-            if(!((Agent)neighbor).getEnoughTraining()){
-                return false;
-            }
-        }
-        if(!getEnoughTraining()){
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -193,7 +152,7 @@ public class Agent extends Node implements Runnable{
      * @return
      */
     private double calWeightedProportion(double priority,double fmq){
-        return 0.8 * priority + 0.2 * fmq;
+        return 0.6 * priority + 0.4 * fmq;
     }
 
     /**
@@ -265,10 +224,13 @@ public class Agent extends Node implements Runnable{
 
     /**
      * 更新附带权重信息
-     * @param positivePriority
      */
-    private void updateBoundedPriority(double positivePriority){
-        this.setBoundedPriority((this.getBoundedPriority() * (this.connectionTimes-1) + positivePriority) / (this.connectionTimes));
+    private void updateLinkedPriority(){
+        double linkedPriority = 0;
+        for(Node agent:getNeighbors()){
+            linkedPriority += (this.cooperationStatistics.get(((Agent)agent).getId()) == null ? 0 :this.cooperationStatistics.get(((Agent)agent).getId()).getPositiveFrequency() * agent.getPriority());
+        }
+        this.setLinkedPriority(linkedPriority);
     }
 
     /**
@@ -277,7 +239,7 @@ public class Agent extends Node implements Runnable{
     private void updateLearningRate(){
         this.learningRate -= Config.deltaLearningRate;
         if(this.learningRate < 0.1){
-            this.learningRate = 0.1;
+            this.learningRate = 0.5;
         }
     }
 
@@ -287,7 +249,268 @@ public class Agent extends Node implements Runnable{
     private void updateExploreRate(){
         this.exploreRate -= Config.deltaExploreRate;
         if(this.exploreRate < 0.1){
-            this.exploreRate = 0.1;
+            this.exploreRate = 0.5;
+        }
+    }
+
+
+    public void randomTraining(){
+        int maxRowAction = countActionPriorityPair(true);
+        int maxColumnAction = countActionPriorityPair(false);
+
+        int randomPartner = Config.getRandomNumber(0,getNeighborsSize()-1);
+        Agent partner = (Agent) getNeighbors().get(randomPartner);
+
+        // TODO 1：  我是 row player，他是 column player ================================================================================================
+
+        // TODO：投票的时候，加上过滤或者统计信息，根据maxFrequency——>接受度
+        int rowAction = selectActionWithRecommended(maxRowAction); // 自己是 row player: 根据投票选择 action：
+
+        // TODO: 这里应该是 伊普西龙探索！！！！！！！！！！！！！！
+        int columnAction = partner.selectActionWithRecommended(maxColumnAction); // 对方是 column player
+
+        double reward = Config.rewards[rowAction][columnAction];
+
+        // 记录统计信息
+        if(this.cooperationStatistics.get(partner.getId()) == null){
+            this.cooperationStatistics.put(partner.getId(),new Statistics(0,0));
+        }
+
+        if(partner.cooperationStatistics.get(this.getId()) == null){
+            partner.cooperationStatistics.put(this.getId(),new Statistics(0,0));
+        }
+
+        // 记录统计信息
+        this.cooperationStatistics.get(partner.getId()).increaseTotal();
+        partner.cooperationStatistics.get(this.getId()).increaseTotal();
+
+        if(reward > 0){
+            this.cooperationStatistics.get(partner.getId()).increasePositive();
+            partner.cooperationStatistics.get(this.getId()).increasePositive();
+        }
+
+        // 1: 更新各自 Q table
+        qValues[0][rowAction].setqValue((1 - learningRate) *  qValues[0][rowAction].getqValue() + learningRate * reward);
+        partner.qValues[1][columnAction].setqValue((1 - partner.learningRate) *  partner.qValues[1][columnAction].getqValue() + partner.learningRate * reward);
+
+        // 2: 更新总（s,a）次数
+        qValues[0][rowAction].increaseTotalTimes();  // 总次数
+        partner.qValues[1][columnAction].increaseTotalTimes();
+
+        // 3: 更新各自 maxReward under (s,a)
+        if(reward > qValues[0][rowAction].getMaxQValue()) {
+            qValues[0][rowAction].setMaxQValue(reward);  // maxReward
+            qValues[0][rowAction].setMaxQTimes(1);
+        }else if(reward == qValues[0][rowAction].getMaxQValue()){
+            qValues[0][rowAction].increaseMaxTimes();
+        }
+
+        if(reward > partner.qValues[1][columnAction].getMaxQValue()) {
+            partner.qValues[1][columnAction].setMaxQValue(reward);
+            partner.qValues[1][columnAction].setMaxQTimes(1);
+        }else if(reward == partner.qValues[1][columnAction].getMaxQValue()){
+            partner.qValues[1][columnAction].increaseMaxTimes();
+        }
+
+        // 4: 更新 max frequency under (s,a)
+        qValues[0][rowAction].setFrequency();
+        partner.qValues[1][columnAction].setFrequency();
+
+        // 5: 更新 FMQ
+        qValues[0][rowAction].updateFMQ(Config.weightFactorForFMQ);  // 总次数
+        partner.qValues[1][columnAction].updateFMQ(Config.weightFactorForFMQ);
+
+
+        // TODO 2：  我是 column player，他是 row player ================================================================================================
+        // TODO：投票的时候，加上过滤或者统计信息，根据maxFrequency——>接受度
+        columnAction = selectActionWithRecommended(maxColumnAction); // 自己是 column player: 根据投票选择 action：
+
+        // TODO: 这里应该是 伊普西龙探索！！！！！！！！！！！！！！
+        rowAction = partner.selectActionWithRecommended(maxRowAction); // 对方是 row player
+        reward = Config.rewards[rowAction][columnAction];
+
+        // 记录统计信息
+        this.cooperationStatistics.get(partner.getId()).increaseTotal();
+        partner.cooperationStatistics.get(this.getId()).increaseTotal();
+
+        if(reward > 0) {
+            this.cooperationStatistics.get(partner.getId()).increasePositive();
+            partner.cooperationStatistics.get(this.getId()).increasePositive();
+        }
+
+        // 1: 更新各自 Q table
+        qValues[1][columnAction].setqValue((1 - learningRate) *  qValues[1][columnAction].getqValue() + learningRate * reward);
+        partner.qValues[0][rowAction].setqValue((1 - partner.learningRate) *  partner.qValues[0][rowAction].getqValue() + partner.learningRate * reward);
+
+        // 2: 更新总（s,a）次数
+        qValues[1][columnAction].increaseTotalTimes();  // 总次数
+        partner.qValues[0][rowAction].increaseTotalTimes();
+
+        // 3: 更新各自 maxReward under (s,a)
+        if(reward > qValues[1][columnAction].getMaxQValue()) {
+            qValues[1][columnAction].setMaxQValue(reward);  // maxReward
+            qValues[1][columnAction].setMaxQTimes(1);
+        }else if(reward == qValues[1][columnAction].getMaxQValue()){
+            qValues[1][columnAction].increaseMaxTimes();
+        }
+
+        if(reward > partner.qValues[0][rowAction].getMaxQValue()) {
+            partner.qValues[0][rowAction].setMaxQValue(reward);
+            partner.qValues[0][rowAction].setMaxQTimes(1);
+        }else if(reward == partner.qValues[0][rowAction].getMaxQValue()){
+            partner.qValues[0][rowAction].increaseMaxTimes();
+        }
+
+        // 4: 更新 max frequency under (s,a)
+        qValues[1][columnAction].setFrequency();
+        partner.qValues[0][rowAction].setFrequency();
+
+        // 5: 更新 FMQ
+        qValues[1][columnAction].updateFMQ(Config.weightFactorForFMQ);  // 总次数
+        partner.qValues[0][rowAction].updateFMQ(Config.weightFactorForFMQ);
+
+
+        // 更新通信连接次数
+        connectionTimes++;
+        partner.connectionTimes++;
+
+        // 更新学习率
+        updateLearningRate();
+
+        // 更新探索率
+        updateExploreRate();
+
+        // 更新各自附加权重
+        this.updateLinkedPriority();
+        partner.updateLinkedPriority();
+
+        this.requestQueue.clear();
+    }
+
+    /**
+     * 选择action
+     * @param state
+     * @return
+     */
+    private int selectAction(int state){
+        // 先随机选一个，防重复选择同一个action
+        int action = Config.getRandomNumber(0,actionNum-1);
+        if(Math.random() < exploreRate){  // 随机探索
+            return action;
+        }
+        double maxValue = qValues[state][action].getFmq();
+        for(int i = 0; i < actionNum;i++){
+            if(qValues[state][i].getFmq() > maxValue){
+                maxValue = qValues[state][i].getFmq();
+                action = i;
+            }
+        }
+        return action;
+    }
+
+    /**
+     * 取出当前最好的 row：action
+     * @return
+     */
+    public int getBestRowAction(){
+        int action = Config.getRandomNumber(0,actionNum-1);
+
+        double maxValue = qValues[0][action].getFmq();
+        int maxAction = action;
+        for(int i = 0; i < qValues[0].length;i++){
+            if(qValues[0][i].getFmq() > maxValue){
+                maxValue = qValues[0][i].getFmq();
+                maxAction = i;
+            }
+        }
+        return maxAction;
+    }
+
+    /**
+     * 取出当前最好的 column：action
+     * @return
+     */
+    public int getBestColumnAction(){
+        int action = Config.getRandomNumber(0,actionNum-1);
+
+        double maxValue = qValues[1][action].getFmq();
+        int maxAction = action;
+        for(int i = 0; i < qValues[1].length;i++){
+            if(qValues[1][i].getFmq() > maxValue){
+                maxValue = qValues[1][i].getFmq();
+                maxAction = i;
+            }
+        }
+        return maxAction;
+    }
+
+
+//    private int selectAction(int state){
+//        // 先随机选一个，防重复选择同一个action
+//        if(Math.random() < exploreRate){  // 随机探索
+//            return Config.getRandomNumber(0,actionNum-1);
+//        }
+//        // 从第 0 个开始遍历
+//        int action = 0;
+//        double maxValue = qValues[state][action].getFmq();
+//        for(int i = 1; i < actionNum;i++){
+//            if(qValues[state][i].getFmq() > maxValue){
+//                maxValue = qValues[state][i].getFmq();
+//                action = i;
+//            }
+//        }
+//        return action;
+//    }
+
+    /**
+     * 使用推荐的action进行 e-探索
+     * @param actionRecommended
+     * @return
+     */
+    private int selectActionWithRecommended(int actionRecommended){
+        if(Math.random() < exploreRate){  // 随机探索
+            return Config.getRandomNumber(0,actionNum-1);
+        }else{
+            return actionRecommended;
+        }
+    }
+
+
+    // 控制各个 agent 开始及结束的锁
+    @JsonIgnore
+    private CountDownLatch startGate;
+
+    @JsonIgnore
+    private CountDownLatch endGate;
+
+    public CountDownLatch getStartGate() {
+        return startGate;
+    }
+
+    public void setStartGate(CountDownLatch startGate) {
+        this.startGate = startGate;
+    }
+
+    public CountDownLatch getEndGate() {
+        return endGate;
+    }
+
+    public void setEndGate(CountDownLatch endGate) {
+        this.endGate = endGate;
+    }
+
+    @Override
+    public void run() {
+        try {
+            // 当前线程阻塞在起始处，确保当其他线程都启动后，再共同继续
+            startGate.await();
+            try{
+                training();
+            }finally {
+                endGate.countDown();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -306,7 +529,7 @@ public class Agent extends Node implements Runnable{
         int maxRowAction = 0,maxColumnAction = 0;
         boolean checkNext = false;
         while (!GlobalCache.isConverge(type,false)){
-            if(Config.printLog) 
+            if(Config.printLog)
                 System.out.println("agent"+getId() + " 没有收敛，继续训练...");
             if(connectionLock.tryLock()){ // 拿到了自己的锁，进而继续拿对方的通信锁。保证只有一个线程能够访问
                 try{
@@ -493,8 +716,8 @@ public class Agent extends Node implements Runnable{
 //                                    source.currentWindow.updateRequestPriority(this.getPriority());
 
                                     // 更新各自附加权重
-                                    this.updateBoundedPriority(source.getPriority() * this.cooperationStatistics.get(source.getId()).getPositiveFrequency());
-                                    source.updateBoundedPriority(this.getPriority() * source.cooperationStatistics.get(this.getId()).getPositiveFrequency());
+                                    this.updateLinkedPriority();
+                                    source.updateLinkedPriority();
 
                                     // 发放更新通知：request
                                     sendConnectionRequestToNeighbors(false);
@@ -507,7 +730,7 @@ public class Agent extends Node implements Runnable{
                                 }
                             }else{  // 未获得锁
                                 // TODO: 未能获取当前对象的锁，查看请求中,下一个对象
-                                if(Config.printLog) 
+                                if(Config.printLog)
                                     System.out.println("agent"+getId() + "未能建立通信, check next request...");
                                 request = requestQueue.poll();
                             }
@@ -522,146 +745,19 @@ public class Agent extends Node implements Runnable{
                         sendConnectionRequestToNeighbors(false);
                     }
 
-                    if(Config.printLog) 
+                    if(Config.printLog)
                         System.out.println("agent"+getId() + "已发出请求，正等待其它 agent 应答..........................................");
                     TimeUnit.NANOSECONDS.sleep(fixedDelay + random.nextLong() % randMod);
                 }finally {
                     connectionLock.unlock();
                 }
             }else{
-                if(Config.printLog) 
+                if(Config.printLog)
                     System.out.println("agent"+getId() + "自己的锁被占用；it is in communication...");
                 TimeUnit.NANOSECONDS.sleep(fixedDelay + random.nextLong() % randMod);
             }
         }
 
-    }
-
-    /**
-     * 选择action
-     * @param state
-     * @return
-     */
-    private int selectAction(int state){
-        // 先随机选一个，防重复选择同一个action
-        int action = Config.getRandomNumber(0,actionNum-1);
-        if(Math.random() < exploreRate){  // 随机探索
-            return action;
-        }
-        double maxValue = qValues[state][action].getFmq();
-        for(int i = 0; i < actionNum;i++){
-            if(qValues[state][i].getFmq() > maxValue){
-                maxValue = qValues[state][i].getFmq();
-                action = i;
-            }
-        }
-        return action;
-    }
-
-    /**
-     * 取出当前最好的 row：action
-     * @return
-     */
-    public int getBestRowAction(){
-        int action = Config.getRandomNumber(0,actionNum-1);
-
-        double maxValue = qValues[0][action].getFmq();
-        int maxAction = action;
-        for(int i = 0; i < qValues[0].length;i++){
-            if(qValues[0][i].getFmq() > maxValue){
-                maxValue = qValues[0][i].getFmq();
-                maxAction = i;
-            }
-        }
-        return maxAction;
-    }
-
-    /**
-     * 取出当前最好的 column：action
-     * @return
-     */
-    public int getBestColumnAction(){
-        int action = Config.getRandomNumber(0,actionNum-1);
-
-        double maxValue = qValues[1][action].getFmq();
-        int maxAction = action;
-        for(int i = 0; i < qValues[1].length;i++){
-            if(qValues[1][i].getFmq() > maxValue){
-                maxValue = qValues[1][i].getFmq();
-                maxAction = i;
-            }
-        }
-        return maxAction;
-    }
-
-
-//    private int selectAction(int state){
-//        // 先随机选一个，防重复选择同一个action
-//        if(Math.random() < exploreRate){  // 随机探索
-//            return Config.getRandomNumber(0,actionNum-1);
-//        }
-//        // 从第 0 个开始遍历
-//        int action = 0;
-//        double maxValue = qValues[state][action].getFmq();
-//        for(int i = 1; i < actionNum;i++){
-//            if(qValues[state][i].getFmq() > maxValue){
-//                maxValue = qValues[state][i].getFmq();
-//                action = i;
-//            }
-//        }
-//        return action;
-//    }
-
-    /**
-     * 使用推荐的action进行 e-探索
-     * @param actionRecommended
-     * @return
-     */
-    private int selectActionWithRecommended(int actionRecommended){
-        if(Math.random() < exploreRate){  // 随机探索
-            return Config.getRandomNumber(0,actionNum-1);
-        }else{
-            return actionRecommended;
-        }
-    }
-
-
-    // 控制各个 agent 开始及结束的锁
-    @JsonIgnore
-    private CountDownLatch startGate;
-
-    @JsonIgnore
-    private CountDownLatch endGate;
-
-    public CountDownLatch getStartGate() {
-        return startGate;
-    }
-
-    public void setStartGate(CountDownLatch startGate) {
-        this.startGate = startGate;
-    }
-
-    public CountDownLatch getEndGate() {
-        return endGate;
-    }
-
-    public void setEndGate(CountDownLatch endGate) {
-        this.endGate = endGate;
-    }
-
-    @Override
-    public void run() {
-        try {
-            // 当前线程阻塞在起始处，确保当其他线程都启动后，再共同继续
-            startGate.await();
-            try{
-                training();
-            }finally {
-                endGate.countDown();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     public QItem[][] getqValues() {
@@ -671,4 +767,34 @@ public class Agent extends Node implements Runnable{
     public int getConnectionTimes(){
         return connectionTimes;
     }
+
+
+    /**
+     * 打印 Q Table
+     */
+    public void printQTable(){
+        if(Config.printLog) {
+            System.out.println("==================================== agent"+getId()+" Q TABLE=========================================");
+            System.out.println("agent"+getId()+" update q table " + connectionTimes +" times.");
+            for(int i = 0; i < stateNum; i++){
+                for(int j = 0; j < actionNum; j++){
+                    if(j == Config.expectedAction){
+                        System.out.print(" ["+qValues[i][j].getFmq() + "] ");
+                    }else{
+                        System.out.print("  "+qValues[i][j].getFmq() + "  ");
+                    }
+
+                }
+                System.out.println();
+            }
+            System.out.println("   ===========================================Q TABLE===========================================");
+            System.out.println();
+        }
+    }
+
+
+//    private
+
+
+
 }

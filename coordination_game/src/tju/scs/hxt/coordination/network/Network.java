@@ -47,10 +47,12 @@ public class Network {
      * @return
      */
     public static Agent[][] generateGridNetwork(int rowNum,int colNum,int type){
+        System.out.println("generateGridNetwork");
+
         Agent[][] nodes = new Agent[rowNum][colNum];
         for(int i = 0; i < rowNum;i++){
             for(int j = 0; j < colNum; j++){
-                nodes[i][j] = new Agent(i * colNum + j,Config.actionNum,Config.exploreRate,Config.learningRate,type,rowNum*colNum);
+                nodes[i][j] = new Agent(i * colNum + j,Config.actionNum,Config.exploreRate,Config.learningRate,type);
             }
         }
 
@@ -102,23 +104,13 @@ public class Network {
      * @return
      */
     public static List<Agent> generateRegularGraph(int nodesNum,int neighborNum,int type){
-        return generateRegularGraph(nodesNum,neighborNum,type,-1);
-    }
+        System.out.println("generateRegularGraph");
 
-
-    /**
-     * 先组成一个环，每个 node 与距离自己最近的 n（暂时定为偶数个） 个 node 相连接
-     * @param nodesNum 网络节点数
-     * @param neighborNum 规则网络的相邻邻居数 （此处最好为偶数）
-     * @param totalNum 整体网络的结点个数，保证各个agent权值计算的正确性
-     * @return
-     */
-    private static List<Agent> generateRegularGraph(int nodesNum,int neighborNum,int type,int totalNum){
         neighborNum = neighborNum / 2;
         // 1：添加节点
         List<Agent> linkedAgents = new ArrayList<Agent>(nodesNum);
         for(int i = 0; i < nodesNum;i++){
-            linkedAgents.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,type,totalNum > nodesNum?totalNum:nodesNum));
+            linkedAgents.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,type));
         }
 
         Agent me,neighbor;
@@ -144,11 +136,12 @@ public class Network {
      * @return
      */
     public static List<Agent> generateRandomRegularGraph(int nodesNum,int neighborNum,int type){
+        System.out.println("generateRandomRegularGraph");
 
         // 1：生成 nodesNum 个网络节点
         List<Agent> groupWithoutLink = new LinkedList<Agent>();
         for(int i = 0; i < nodesNum;i++){
-            groupWithoutLink.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,type,nodesNum));
+            groupWithoutLink.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,type));
         }
 
         List<Agent> linkedAgents = new ArrayList<Agent>(nodesNum);
@@ -200,11 +193,12 @@ public class Network {
      * @return
      */
     public static List<Agent> generateRandomGraph(int nodesNum,double p,int type){
+        System.out.println("generateRandomGraph");
 
         // 1：生成 nodesNum 个网络节点
         List<Agent> groupWithoutLink = new LinkedList<Agent>();
         for(int i = 0; i < nodesNum;i++){
-            groupWithoutLink.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,type,nodesNum));
+            groupWithoutLink.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,type));
         }
 
         List<Agent> linkedAgents = new ArrayList<Agent>(nodesNum);
@@ -247,22 +241,10 @@ public class Network {
      * @return
      */
     public static List<Agent> generateSmallWorldGraph(int nodesNum,int neighborNum,double p,int type){
-        return generateSmallWorldGraph(nodesNum,neighborNum,p,type,-1);
-    }
+        System.out.println("generateSmallWorldGraph");
 
-    /**
-     * small-world 网络；
-     * 瓦茨-斯特罗加茨模型
-     * WS模型是基于两人的一个假设：小世界模型是介于规则网络和随机网络之间的网络。因此模型从一个完全的规则网络出发，以一定的概率将网络中的连接打乱重连。
-     * @param nodesNum 网络节点数
-     * @param neighborNum 规则网络的相邻邻居数
-     * @param p  以概率 p 重连
-     * @param totalNum 整体网络的结点个数，保证各个agent权值计算的正确性
-     * @return
-     */
-    private static List<Agent> generateSmallWorldGraph(int nodesNum,int neighborNum,double p,int type,int totalNum){
         // 1: 生成规则网络
-        List<Agent> nodes = generateRegularGraph(nodesNum,neighborNum,type,totalNum);
+        List<Agent> nodes = generateRegularGraph(nodesNum,neighborNum,type);
         neighborNum = neighborNum / 2;
 
         Agent me,neighbor,relinkNeighbor;
@@ -293,6 +275,7 @@ public class Network {
 
 
     /**
+     * scale free 网络
      * BA模型
      * 增长模式：不少现实网络是不断扩大不断增长而来的，例如互联网中新网页的诞生，人际网络中新朋友的加入，新的论文的发表，航空网络中新机场的建造等等。
      * 优先连接模式：新的节点在加入时会倾向于与有更多连接的节点相连，例如新网页一般会有到知名的网络站点的连接，新加入社群的人会想与社群中的知名人士结识，
@@ -302,15 +285,16 @@ public class Network {
      * @return
      */
     public static List<Agent> generateScaleFreeGraph(int nodesNum,int m,int type){
+        System.out.println("generateScaleFreeGraph");
         int smallWordAgents = 4;
         if(nodesNum > 10){
             smallWordAgents = 10;
         }
-        List<Agent> nodes = generateSmallWorldGraph(smallWordAgents,2,0.6,type,nodesNum);  // 以此参数生成 small word 网络
+        List<Agent> nodes = generateSmallWorldGraph(smallWordAgents,2,0.6,type);  // 以此参数生成 small word 网络
         int gapNum = nodesNum - smallWordAgents,gapLink = m,totalDegree = calTotalDegree(nodes);
         Agent newAgent = null,oldAgent = null;
         while (gapNum > 0){  // 依次添加节点
-            newAgent = new Agent(smallWordAgents++,Config.actionNum,Config.exploreRate,Config.learningRate,type,nodesNum);
+            newAgent = new Agent(smallWordAgents++,Config.actionNum,Config.exploreRate,Config.learningRate,type);
             gapLink = m;
             while (gapLink > 0){  // 为每个新节点，添加
                 // 随机选择一个旧的节点
