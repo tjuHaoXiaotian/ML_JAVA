@@ -23,7 +23,6 @@ public class Node {
     private List<Integer> neighborsId;
 
     @JsonIgnore
-
     private List<Node> neighbors;
 
     @JsonIgnore

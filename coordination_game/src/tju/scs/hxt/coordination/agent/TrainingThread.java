@@ -45,7 +45,7 @@ public class TrainingThread extends Thread {
 
     private void sendRequest(){
         for(Agent agent: GlobalCache.getAgents(type)){
-            agent.sendConnectionRequestToNeighbors(false);
+            agent.sendConnectionRequestToNeighbors(true);
         }
     }
 

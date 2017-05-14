@@ -57,6 +57,9 @@ public class Agent extends Node implements Runnable{
         // 初始化 q tables
         initTables();
 
+        // 初始化 action 选择策略
+        initPolicy();
+
         // 初始化请求队列
 //        initRequestQueue(true);
         initRequestQueue(false);
@@ -113,22 +116,27 @@ public class Agent extends Node implements Runnable{
     private void sendConnectionRequest(Agent agent){
         // 默认策略，越新的位置越靠前，及优先考虑当前最新的连接请求。
         int rowAction = getBestRowAction(),columnAction = getBestColumnAction();
-        agent.addRequest(new Request(this,agent,rowAction,columnAction,this.qValues[0][rowAction].getFmq(),this.qValues[1][columnAction].getFmq(),this.getCalPriority()));
+        agent.addRequest(new Request(this,agent,rowAction,columnAction,this.qValues[0][rowAction].getFmq(),this.qValues[1][columnAction].getFmq(),this.getCalPriority(),this.policy));
     }
 
     /**
      * 向所有邻居发起通信请求
      */
-    public void sendConnectionRequestToNeighbors(boolean higherOnly){
-        if(higherOnly){  // 1:只向更高级别的 agent 发送请求
+    public void sendConnectionRequestToNeighbors(boolean random){
+        if(random){   // 1: randomly 发送请求
             for(Node neighbor:this.getNeighbors()){
-                if(neighbor.getCalPriority() > this.getCalPriority()){
+                if(Math.random() > 0.5){
                     sendConnectionRequest((Agent)neighbor);
                 }
             }
-        }else{   // 2: 向所有 agent 发送请求
-            for(Node neighbor:this.getNeighbors()){
-                sendConnectionRequest((Agent)neighbor);
+        }else{
+            int resourceNum = 0,id;
+            Set<Integer> excepts = new HashSet<>();
+            while (resourceNum < RESOURCE_NUM && resourceNum < getNeighborsSize()){
+                id = chooseTheMostFarAgent(excepts);
+                sendConnectionRequest(getNeighborById(id));
+                excepts.add(id);
+                resourceNum++;
             }
         }
 
@@ -228,7 +236,8 @@ public class Agent extends Node implements Runnable{
     private void updateLinkedPriority(){
         double linkedPriority = 0;
         for(Node agent:getNeighbors()){
-            linkedPriority += (this.cooperationStatistics.get(((Agent)agent).getId()) == null ? 0 :this.cooperationStatistics.get(((Agent)agent).getId()).getPositiveFrequency() * agent.getPriority());
+            linkedPriority += (this.cooperationStatistics.get(((Agent)agent).getId()) == null ?
+                    0 :this.cooperationStatistics.get(((Agent)agent).getId()).getPositiveFrequency() * agent.getPriority());
         }
         this.setLinkedPriority(linkedPriority);
     }
@@ -238,8 +247,8 @@ public class Agent extends Node implements Runnable{
      */
     private void updateLearningRate(){
         this.learningRate -= Config.deltaLearningRate;
-        if(this.learningRate < 0.1){
-            this.learningRate = 0.5;
+        if(this.learningRate < 0.2){
+            this.learningRate = 0.2;
         }
     }
 
@@ -247,27 +256,30 @@ public class Agent extends Node implements Runnable{
      * 更新探索率
      */
     private void updateExploreRate(){
-        this.exploreRate -= Config.deltaExploreRate;
-        if(this.exploreRate < 0.1){
-            this.exploreRate = 0.5;
-        }
+//        this.exploreRate -= Config.deltaExploreRate;
+//        if(this.exploreRate < 0.1){
+//            this.exploreRate = 0.5;
+//        }
+        this.exploreRate = 1 / Math.sqrt(connectionTimes == 0?1:connectionTimes);
     }
 
 
     public void randomTraining(){
+        // 取出请求中的策略，同步到本地
+        synchronizeSimilarity();
+
         int maxRowAction = countActionPriorityPair(true);
         int maxColumnAction = countActionPriorityPair(false);
 
-        int randomPartner = Config.getRandomNumber(0,getNeighborsSize()-1);
-        Agent partner = (Agent) getNeighbors().get(randomPartner);
-
+//        int randomPartner = Config.getRandomNumber(0,getNeighborsSize()-1);
+//        Agent partner = (Agent) getNeighbors().get(randomPartner);
+        Agent partner = getNeighborById(chooseTheMostFarAgent(null));
         // TODO 1：  我是 row player，他是 column player ================================================================================================
 
         // TODO：投票的时候，加上过滤或者统计信息，根据maxFrequency——>接受度
         int rowAction = selectActionWithRecommended(maxRowAction); // 自己是 row player: 根据投票选择 action：
-
-        // TODO: 这里应该是 伊普西龙探索！！！！！！！！！！！！！！
-        int columnAction = partner.selectActionWithRecommended(maxColumnAction); // 对方是 column player
+//        int columnAction = partner.selectActionWithRecommended(maxColumnAction); // 对方是 column player
+        int columnAction = partner.selectAction(1); // 对方是 column player
 
         double reward = Config.rewards[rowAction][columnAction];
 
@@ -325,8 +337,8 @@ public class Agent extends Node implements Runnable{
         // TODO：投票的时候，加上过滤或者统计信息，根据maxFrequency——>接受度
         columnAction = selectActionWithRecommended(maxColumnAction); // 自己是 column player: 根据投票选择 action：
 
-        // TODO: 这里应该是 伊普西龙探索！！！！！！！！！！！！！！
-        rowAction = partner.selectActionWithRecommended(maxRowAction); // 对方是 row player
+//        rowAction = partner.selectActionWithRecommended(maxRowAction); // 对方是 row player
+        rowAction = partner.selectAction(0); // 对方是 row player
         reward = Config.rewards[rowAction][columnAction];
 
         // 记录统计信息
@@ -376,9 +388,15 @@ public class Agent extends Node implements Runnable{
 
         // 更新学习率
         updateLearningRate();
+        partner.updateLearningRate();
 
         // 更新探索率
         updateExploreRate();
+        partner.updateExploreRate();
+
+        // 更新策略（action 选择概率）
+        updatePolicy();
+        partner.updatePolicy();
 
         // 更新各自附加权重
         this.updateLinkedPriority();
@@ -386,6 +404,8 @@ public class Agent extends Node implements Runnable{
 
         this.requestQueue.clear();
     }
+
+
 
     /**
      * 选择action
@@ -793,8 +813,197 @@ public class Agent extends Node implements Runnable{
     }
 
 
-//    private
+    private final int RESOURCE_NUM = 2;
 
+    // 策略，即选择某一个action的概率
+    private double [][] policy;
+
+    private double [][]defaultPolicy;
+
+    // 统计neighbor的策略，以便衡量与某个neighbor的相似度（neighbor的策略由通信是负责传递）
+    private Map<Integer,NeighborSimilar> similarityOfNeighbors = new HashMap<>();
+
+    private void synchronizeSimilarity() {
+        NeighborSimilar neighborSimilar;
+        for(Request request:requestQueue){
+            neighborSimilar = similarityOfNeighbors.get(request.getSource().getId());
+            similarityOfNeighbors.put(request.getSource().getId(),
+                    neighborSimilar == null ? new NeighborSimilar(request.getSource().getId(),request.getPolicy())
+                            :neighborSimilar.updatePolicy(request.getPolicy()));
+        }
+    }
+
+    /**
+     * 策略，即选择某一个action的概率
+     * 初始化为 1/n
+     */
+    private void initPolicy(){
+        policy = new double[stateNum][actionNum];
+        defaultPolicy = new double[stateNum][actionNum];
+        for(int i = 0; i < stateNum;i++){
+            for(int j = 0; j < actionNum;j++){
+                policy[i][j] = ((double)1)/actionNum;
+            }
+        }
+
+        for(int i = 0; i < stateNum;i++){
+            for(int j = 0; j < actionNum;j++){
+                defaultPolicy[i][j] = ((double)1)/actionNum;
+            }
+        }
+    }
+
+    /**
+     * agent 更新自己的策略(选择不同action的概率)
+     */
+    private void updatePolicy(){
+        int bestRowAction = getBestRowAction();
+        int bestColumnAction = getBestColumnAction();
+        // 更新 row action
+        for(int i = 0; i < actionNum;i++){
+            policy[0][i] = exploreRate/actionNum;
+        }
+        policy[0][bestRowAction] += (1-exploreRate);
+        // 更新 column action
+        for(int i = 0; i < actionNum;i++){
+            policy[1][i] = exploreRate/actionNum;
+        }
+        policy[1][bestColumnAction] += (1-exploreRate);
+    }
+
+    private class NeighborSimilar{
+        private int id;
+
+        private double [][] policy;
+
+        public NeighborSimilar(int id,double[][] policy) {
+            this.id = id;
+            this.policy = policy;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof NeighborSimilar)) return false;
+
+            NeighborSimilar that = (NeighborSimilar) o;
+
+            if (id != that.id) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return id;
+        }
+
+        public NeighborSimilar updatePolicy(double [][]policy){
+            this.policy = policy;
+            return this;
+        }
+    }
+
+    /**
+     * 根据差异度，进行轮盘赌，选择出一个agent
+     * @return
+     */
+    private int chooseTheMostFarAgent(Set<Integer> excepts){
+        Map<Integer,Double> similarity = calSimilarOfNeighbors();
+        int [] ids = new int [similarity.size()];
+        int [] values = new int [similarity.size()];
+        int index = 0;
+        for(Map.Entry<Integer,Double> entry:similarity.entrySet()){
+            ids[index] = entry.getKey();
+            values[index] = (int)Math.round((1 - entry.getValue()) * 100);
+        }
+
+        int id = roulette(ids,values);
+        while (excepts != null && excepts.contains(id)){
+            id = roulette(ids,values);
+        }
+        return id;
+    }
+
+    private Agent getNeighborById(int id){
+        for(Node n:getNeighbors()){
+            if(n.getId() == id){
+                return (Agent)n;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 计算所有邻居与自己的相似度
+     * @return
+     */
+    private Map<Integer,Double> calSimilarOfNeighbors() {
+        Map<Integer, Double> similarity = new HashMap<>(getNeighborsSize());
+        for (Node neighbor : getNeighbors()) {
+            similarity.put(neighbor.getId(), calSimilarOfAgent(neighbor.getId()));
+        }
+        return similarity;
+    }
+
+
+    /**
+     * 计算与neighbor id 的策略相似度
+     * @param id
+     * @return
+     */
+    private double calSimilarOfAgent(int id){
+        // 还未收到过对方的通知
+        if(similarityOfNeighbors.get(id) == null){
+            return (cosSimilar(this.policy[0],this.defaultPolicy[0]) + cosSimilar(this.policy[1],this.defaultPolicy[1])) / 2;
+        }else{
+            double [][] policy = similarityOfNeighbors.get(id).policy;
+            return (cosSimilar(this.policy[0],policy[0]) + cosSimilar(this.policy[1],policy[1])) / 2;
+        }
+    }
+
+    /**
+     * 计算余弦相似度
+     * @param policy1
+     * @param policy2
+     * @return
+     */
+    private double cosSimilar(double [] policy1,double [] policy2){
+        double numerator = 0,denominator,part1 = 0,part2 = 0;
+        for(int i = 0;i < policy1.length;i++){
+            numerator += policy1[i] * policy2[i];
+            part1 += policy1[i] * policy1[i];
+            part2 += policy2[i] * policy2[i];
+        }
+        denominator = Math.sqrt(part1) * Math.sqrt(part2);
+        return numerator / denominator;
+    }
+
+    /**
+     * 轮盘赌
+     * @param ids
+     * @param values
+     * @return
+     */
+    private int roulette(int[] ids,int[] values){
+        int pointId = 0;
+        int pointValue = values[pointId];
+        int length = sum(values);
+        int cut = Config.getRandomNumber(0,length);
+        while(pointValue < cut){
+            pointId++;
+            pointValue+=values[pointId];
+        }
+        return ids[pointId];
+    }
+
+    private int sum(int[] values){
+        int sum = 0;
+        for(double ele:values){
+            sum += ele;
+        }
+        return sum;
+    }
 
 
 }

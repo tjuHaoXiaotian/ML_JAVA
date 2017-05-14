@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>coordination game</title>
+
+    <link href="style.css" rel="stylesheet" type="text/css">
+
+</head>
+<body>
+<div class="nav-top">
+
+
+    <ul>
+        <li><h3>coordination game [<span class="information">grid</span>]</h3></li>
+        <li><a href="index2.html" target="_blank">regular</a></li>
+        <li><a href="index3.html" target="_blank">random regular</a></li>
+        <li><a href="index4.html" target="_blank">random</a></li>
+        <li><a href="index5.html" target="_blank">small world</a></li>
+        <li><a href="index6.html" target="_blank">scale free</a></li>
+        <li><a id="reset" href="#">reset</a></li>
+    </ul>
+</div>
+
+
+
+
+<div class="main">
+    <div class="item item1">
+
+    </div>
+
+    <div class="item item2">
+
+    </div>
+
+    <div class="item item3">
+
+    </div>
+
+</div>
+
+<table id="q-table">
+
+</table>
+<script type="text/javascript" src="jquery1.9.0.js"></script>
+<script type="text/javascript" src="d3.v3.min.js"></script>
+<script type="text/javascript" src="images.js"></script>
+<script type="text/javascript">
+//    case 0:  // 网格结构
+//    case 1:  // regular
+//    case 2:  // random regular
+//    case 3:  // random
+//    case 4:  // small world
+//    case 5:  // scale free
+//    default: // small world
+    $(document).ready(function(){
+        var url = "http://localhost:8080/coordination_game/graph/";
+        var type = 0;
+        var obj = new Obj(url,type);
+        obj.init();
+    })
+</script>
+
+
+</body>
+</html>

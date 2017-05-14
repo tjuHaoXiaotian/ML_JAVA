@@ -1,5 +1,7 @@
 package tju.scs.hxt.coordination.agent;
 
+import java.util.Arrays;
+
 /**
  * 通信连接请求
  * Created by haoxiaotian on 2017/3/16 16:35.
@@ -22,15 +24,13 @@ public class Request {
     // column action
     private int columnAction;
 
+    // agent 当前策略通知给对方，以衡量差异
+    private double [][] policy;
+
     public Request() {
     }
 
-    public Request(Agent source,Agent target,int rowAction,int columnAction,double fmqValueRow,double fmqValueColumn){
-        // 默认策略，按时间倒序排列
-        this(source,target,rowAction,columnAction,fmqValueRow,fmqValueColumn,System.currentTimeMillis());
-    }
-
-    public Request(Agent source, Agent target, int rowAction,int columnAction,double fmqValueRow,double fmqValueColumn,double priority) {
+    public Request(Agent source, Agent target, int rowAction,int columnAction,double fmqValueRow,double fmqValueColumn,double priority,double [][] policy) {
         this.source = source;
         this.target = target;
         this.rowAction = rowAction;
@@ -38,6 +38,19 @@ public class Request {
         this.fmqValueRow = fmqValueRow;
         this.fmqValueColumn = fmqValueColumn;
         this.priority = priority;
+        this.policy = getPolicyImage(policy);
+    }
+
+    private double [][] getPolicyImage(double [][] policy){
+        if(policy != null){
+            this.policy = new double[policy.length][policy[0].length];
+            for(int i = 0;i < policy.length;i++){
+                for(int j = 0; j < policy[i].length;j++){
+                    this.policy[i][j] = policy[i][j];
+                }
+            }
+        }
+        return this.policy;
     }
 
     @Override
@@ -124,5 +137,13 @@ public class Request {
 
     public void setFmqValueColumn(double fmqValueColumn) {
         this.fmqValueColumn = fmqValueColumn;
+    }
+
+    public double[][] getPolicy() {
+        return policy;
+    }
+
+    public void setPolicy(double[][] policy) {
+        this.policy = policy;
     }
 }
