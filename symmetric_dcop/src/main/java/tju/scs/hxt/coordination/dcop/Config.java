@@ -18,17 +18,26 @@ public class Config {
     // 系统 agent 各个状态下： action 个数
     public static final int actionNum = 10;
 
-    public static final double messageDiffer = 0.0000001;
+    // dcop 中，信息发送是否继续参数
+    public static final double messageDiffer = 0.00001;
+
+    // 可用（统计对手action次数而得出）概率的总次数下限
+    public static final int recordedTimes = 20;
+
+    // coordination set 选择时，允许的损失率
+    public static final double loseRate = 0.1;
+
+
 
     // 系统 agent 探索率
     public static final double exploreRate = 1;
     public static final double [][] deltaExploreRate = {
-            {0.00023,0.0009,0.0009},
-            {0.00023,0.0009,0.0009},
-            {0.00023,0.0009,0.0009},
-            {0.00023,0.0009,0.0009},
-            {0.00023,0.0009,0.0009},
-            {0.00023,0.0009,0.0009}
+            {0.000009,0.0009,0.0009},
+            {0.000009,0.0009,0.0009},
+            {0.000009,0.0009,0.0009},
+            {0.000009,0.0009,0.0009},
+            {0.000009,0.0009,0.0009},
+            {0.000009,0.0009,0.0009}
     };
 
     public static double deltaLearningRateRef;

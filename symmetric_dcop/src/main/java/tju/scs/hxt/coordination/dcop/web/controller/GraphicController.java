@@ -105,13 +105,13 @@ public class GraphicController {
                         GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateGridNetworkAsList(10, 10,0),0);
                         break;
                     case 1:  // regular
-                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRegularGraph(100, 10,1),1);
+                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRegularGraph(100, 5,1),1);
                         break;
                     case 2:  // random regular
-                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomRegularGraph(100, 10,2),2);
+                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomRegularGraph(100, 5,2),2);
                         break;
                     case 3:  // random
-                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomGraph(100, 0.6,3),3);
+                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomGraph(100, 0.08,3),3);
                         break;
                     case 4:  // small world
                         GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(100, 5, 0.6,4),4);

@@ -1,5 +1,6 @@
 package tju.scs.hxt.coordination.dcop.agent;
 
+import tju.scs.hxt.coordination.dcop.Config;
 import tju.scs.hxt.coordination.dcop.network.Node;
 import tju.scs.hxt.coordination.dcop.web.GlobalCache;
 
@@ -66,20 +67,29 @@ public class TrainingThread extends Thread {
 
         // 2： 统计 round - avg reward 信息
         round++;
-        if(round % 100 == 0){
+        if(round % 50 == 0){
+            if(round % 100 == 0){
+                Config.deltaExploreRate[type][expId] = Config.deltaExploreRate[type][expId] * 2;
+            }
             avgPayoffs.add(new GlobalCache.AvgReward(round, getAvgReward()));
             GlobalCache.setAvgReward(type,expId,avgPayoffs);
             cache.clear();
         }else{
+
             cache.add(new GlobalCache.AvgReward(round, getAvgReward()));
         }
     }
 
     private void initConfiguration(){
         for(Agent agent:GlobalCache.getAgents(type,expId)){
-            // 1：初始化各agent 的 q-table
+            // 1：初始化与各 agent 的 q-table
             agent.initQTables();
 
+            // 2：初始化对各 agent 的 action 统计
+            agent.initObservedPolicy();
+
+            // 3：初始化各个 agent 的 coordination set
+            agent.initCoordinationSet();
         }
     }
 
@@ -105,9 +115,9 @@ public class TrainingThread extends Thread {
             fixedPoint = true;
             // 1：传播信息
             for(Agent agent:GlobalCache.getAgents(type,expId)){
-                // 1：初始化各agent 的 q-table
-                for(Node neighbor:agent.getNeighbors()){
-                    differEnough = agent.sendMessageTo((Agent)neighbor);
+                // 向 coordination set 中的每一个 agent 发送信息
+                for(Agent neighbor:agent.getCoordinationSet()){
+                    differEnough = agent.sendMessageTo(neighbor);
                     if(differEnough){
                         fixedPoint = false;
                     }

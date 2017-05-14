@@ -7,6 +7,7 @@ import tju.scs.hxt.coordination.dcop.network.Node;
 import tju.scs.hxt.coordination.dcop.web.GlobalCache;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by haoxiaotian on 2017/3/13 23:53.
@@ -15,12 +16,26 @@ public class Agent extends Node{
     // 定义game 比较规整，简单；2 player,n-action game;
     private final int actionNum; // 每个 state 下的 action num
 
+    // Q tables
     @JsonIgnore
     private Map<Integer,QTable> qTables = new HashMap<Integer, QTable>();
+
+    // 统计到的信息，对方选择每个action的次数（概率）
+    private Map<Integer,ObservedPolicy> observedPolicy = new HashMap<Integer, ObservedPolicy>();
 
     // 传播的消息： Key ——> this
     @JsonIgnore
     private Map<Integer,Message> messages = new HashMap<Integer, Message>();
+
+    // coordination set
+    @JsonIgnore
+    private Set<Agent> coordinationSet = new HashSet<Agent>();
+
+    // default（init） coordination set
+    @JsonIgnore
+    private Set<Agent> defaultCoordinationSet = new HashSet<Agent>();
+
+
 
     @JsonIgnore
     private double currentPayoff;
@@ -41,15 +56,42 @@ public class Agent extends Node{
         this.type = type;
     }
 
-
-    // TODO:训练时，初始化网络完成后，立即调用
+    /**
+     * 初始化各方的 q table
+     * comment:训练时，初始化网络完成后，立即调用
+     */
     public void initQTables(){
         for(int neighborId:getNeighborsId()){
             qTables.put(neighborId,new QTable(neighborId,this.actionNum));
         }
     }
 
+    /**
+     * 初始化 Coordination Set，默认为所有邻居
+     * comment:训练时，初始化网络完成后，立即调用
+     */
+    public void initCoordinationSet(){
+        for(Node node:getNeighbors()){
+            coordinationSet.add((Agent)node);
+            defaultCoordinationSet.add((Agent)node);
+        }
+    }
 
+    /**
+     * 初始化对对手的action统计信息
+     * comment:训练时，初始化网络完成后，立即调用
+     */
+    public void initObservedPolicy(){
+        for(int id:getNeighborsId()){
+            observedPolicy.put(id,new ObservedPolicy(id,this.actionNum));
+        }
+    }
+
+    /**
+     * 向 neighbor 发送 coordination message
+     * @param neighbor
+     * @return
+     */
     public boolean sendMessageTo(Agent neighbor) {
         // 1： 向目标发送信息
         QTable q = qTables.get(neighbor.getId());
@@ -61,7 +103,13 @@ public class Agent extends Node{
         // 3：消息发送出去
         neighbor.messages.put(this.getId(),message);
 
-        // 4：比较当前消息，与上一条消息的differ
+        // 4：根据目前状态判断是否需要调整 coordination set
+        if(!neighbor.getCoordinationSet().contains(this)){
+            // 我的 coordination set 中有 neighbor，而 neighbor 的 coordination set 中没有我，则在neighbor中加入
+            neighbor.getCoordinationSet().add(this);
+        }
+
+        // 5：比较当前消息，与上一条消息的differ
         double differ = calDiffer(neighbor,old,message);
 
         return Math.abs(differ) > Config.messageDiffer;
@@ -95,23 +143,21 @@ public class Agent extends Node{
 //        System.out.println("messageNew: "+ scoreNew);
 
         double differ = scoreNew - scoreOld;
-        if(Math.abs(differ) > Config.messageDiffer)
-            System.out.println(this.getId()+ " cal message differ : " + scoreNew + " - " + scoreOld + " = " + differ);
+//        if(Math.abs(differ) > Config.messageDiffer)
+//            System.out.println(this.getId()+ " cal message differ : " + scoreNew + " - " + scoreOld + " = " + differ);
         return differ;
     }
 
 
-    /**
-     * 以一定的探索率选择action
-     * @return
-     */
 
     private int maxAction = 0;
-
     public void setMaxAction(int maxAction) {
         this.maxAction = maxAction;
     }
-
+    /**
+     * 以一定的探索率选择action
+     * @return selected action with current policy
+     */
     private int selectActionWithExploration(){
         if(Math.random() < exploreRate){  // 随机探索
             return Config.getRandomNumber(0,actionNum-1);
@@ -137,6 +183,9 @@ public class Agent extends Node{
         if(exploreRate < 0){
             if(!printed){
                 System.out.println(this.getId() + " explore rate decorate to zero !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                for(Integer id:getNeighborsId()){
+                    printQ(id);
+                }
                 printed = true;
             }
             exploreRate = 0;
@@ -233,14 +282,39 @@ public class Agent extends Node{
 
         qTable.getQ()[action][partnerAction] = (1 - learningRate) * qTable.getQ()[action][partnerAction] + learningRate * reward;
         partnerQTable.getQ()[partnerAction][action] = (1 - partner.learningRate) * partnerQTable.getQ()[partnerAction][action] + partner.learningRate * reward;
-
-//        System.out.println("Q["+this.getId() +"," + partner.getId()+"] ============================================================");
-//        for(double [] a:qTable.getQ()){
-//            System.out.println(Arrays.toString(a));
-//        }
-//        System.out.println("====================================================================");
     }
 
+    private void printQ(int partnerId){
+        System.out.println("Q["+this.getId() +"," + partnerId+"] ============================================================");
+        for(double [] a:qTables.get(partnerId).getQ()){
+            System.out.println(toString(a));
+        }
+        System.out.println("====================================================================");
+    }
+
+    public static String toString(double[] a) {
+        if (a == null)
+            return "null";
+        int iMax = a.length - 1;
+        if (iMax == -1)
+            return "[]";
+
+        double v1;
+        StringBuilder b = new StringBuilder();
+        b.append('[');
+        for (int i = 0; ; i++) {
+            v1 = (double)Math.round(a[i]*1000)/1000;
+            b.append(v1);
+            if (i == iMax)
+                return b.append(']').toString();
+            b.append(", ");
+        }
+    }
+
+    /**
+     * 每一次训练
+     * @param network
+     */
     public void training(int network){
 //       learning============================================================================
         Analyze.connectionTimes++;
@@ -263,14 +337,169 @@ public class Agent extends Node{
 
         // 5:current reward
         currentPayoff = reward;
+
+        // 6：TODO 更新 Coordination Set
+        selectCoordinationSet();
+    }
+
+    /**
+     * TODO: dynamically select the coordination set (to reduce the messages sent by the algorithm)
+     */
+    private void selectCoordinationSet() {
+        // 1：cal max loss
+        double maxLoss = Config.loseRate * Math.max(Math.abs(potentialExpectedUtility(defaultCoordinationSet)),potentialLossInLockOfCoordination(new HashSet<Agent>()));
+
+        // 2：计算 coordination set
+        Set<Agent> tempCoordinationSet = new HashSet<>();
+        // 2.1：如果 coordination set 可以为空
+        if(potentialLossInLockOfCoordination(tempCoordinationSet) < maxLoss){
+            coordinationSet.clear();
+            return;
+        }
+
+        // 2.2 coordination set，从小到大选择
+        double markedLoss = 1000000,tempLoss;
+        Set<Agent> markedCoordinationSet = null;
+        // 从最小一个元素开始，逐渐递增遍历
+        boolean found = false;
+        for(int csNum = 1; csNum < defaultCoordinationSet.size() && !found;csNum++){
+            // 依次遍历所有包含 csNum 个元素的集合
+            for(Set<Agent> selected:selectSet(defaultCoordinationSet,csNum)){
+                tempLoss = potentialLossInLockOfCoordination(selected);
+                if(tempLoss < maxLoss){
+                    found = true;
+                    if(tempLoss < markedLoss){
+                        markedLoss = tempLoss;
+                        markedCoordinationSet = new HashSet<>(selected);
+                    }
+                }
+            }
+        }
+        if(found){
+            coordinationSet = markedCoordinationSet;
+        }else{
+            coordinationSet = defaultCoordinationSet;
+        }
+    }
+
+    private static List<Set<Agent>> selectSet(Set<Agent> from,int csNum) {
+        List<Set<Agent>> result = new ArrayList<Set<Agent>>();
+//        if(csNum == 0){
+//            result.add(new HashSet<Agent>()); // 加入一个空结
+//            return result;
+//        }
+        if(csNum > from.size()){  // 无解
+            return null;
+        }else if(csNum == from.size()){  // 只有一个解
+            result.add(from);
+            return result;
+        }
+        List<Set<Agent>> subResult;
+        Set<Agent> tempSet = Collections.newSetFromMap(new ConcurrentHashMap<Agent,Boolean>());
+        for(Agent agent:from){
+            // 1：放当前元素
+            tempSet.add(agent);
+            // 2：子问题
+            from.remove(agent);
+            subResult = selectSet(from,csNum-1);
+
+            for(Set<Agent> subItem:subResult){
+                subItem.addAll(tempSet);
+            }
+            result.addAll(subResult);
+
+            // 3：当前选择，下一种情况
+            // 4：不放当前元素
+            tempSet.remove(agent);
+            subResult = selectSet(from,csNum);
+            if(subResult == null){
+                break;
+            }
+            for(Set<Agent> subItem:subResult){
+                subItem.addAll(tempSet);
+            }
+            result.addAll(subResult);
+        }
+        return result;
+    }
+
+    /**
+     * Potential Loss In Lock Of Coordination with NC,NC = (U - CS)
+     * @param CS only coordinating with CS
+     * @return
+     */
+    private double potentialLossInLockOfCoordination(Set<Agent> CS){
+        return potentialExpectedUtility(defaultCoordinationSet) - potentialExpectedUtility(CS);
+    }
+
+    /**
+     * 计算 max potential expected utility of me exclusively coordinating with coordinationSet
+     * @param coordinationSet
+     * @return
+     */
+    private double potentialExpectedUtility(Set<Agent> coordinationSet){
+        double [] poes = new double[actionNum];
+        for(int actionMe = 0; actionMe < actionNum;actionMe++){
+            poes[actionMe] = potentialExpectedUtility(coordinationSet,actionMe);
+        }
+
+        return getMax(poes);
+    }
+
+    /**
+     * 计算 potential expected utility of me (with actionMe) exclusively coordinating with coordinationSet
+     * @param coordinationSet
+     * @param actionMe
+     * @return
+     */
+    private double potentialExpectedUtility(Set<Agent> coordinationSet,int actionMe){
+        double poe = 0;
+        // 1：显示的 coordination set 中的每一个 agent
+        for(Agent partner:coordinationSet){
+            poe += getMax(qTables.get(partner.getId()).getQ()[actionMe]);
+        }
+
+        // 2：隐式的，虽然未在 coordination set，中，但根据统计对手选择action的概率，计算一个 reward 期望
+        Set<Agent> others = new HashSet<Agent>();
+        for(Agent agent:defaultCoordinationSet){
+            if(!coordinationSet.contains(agent)){
+                others.add(agent);
+            }
+        }
+        for(Agent partner:others){
+            poe += calExpectedReward(partner,actionMe);
+        }
+
+        return poe;
+    }
+
+    /**
+     * 根据统计信息，计算期望reward
+     * @param partner
+     * @param actionMe
+     * @return
+     */
+    private double calExpectedReward(Agent partner,int actionMe){
+        double er = 0;
+        double [] q = qTables.get(partner.getId()).getQ()[actionMe];
+        for(int actionPartner = 0; actionPartner < partner.actionNum;actionPartner++){
+            er += observedPolicy.get(partner.getId()).getProbability(actionMe,actionPartner) * q[actionPartner];
+        }
+        return er;
+    }
+
+    private static double getMax(double [] array){
+        double max = array[0];
+        for(int i = 1;i < array.length;i++){
+            if(array[i] > max){
+                max = array[i];
+            }
+        }
+        return max;
     }
 
     public double getCurrentPayoff() {
         return currentPayoff;
-    }
-
-    public void setCurrentPayoff(double currentPayoff) {
-        this.currentPayoff = currentPayoff;
     }
 
     public int getType() {
@@ -285,8 +514,19 @@ public class Agent extends Node{
         return messages;
     }
 
-    public static void main(String args []){
-        double [] array = new double[300];
-        System.out.println(Arrays.toString(array));
+    public Set<Agent> getCoordinationSet() {
+        return coordinationSet;
     }
+
+    public static void main(String args []){
+//        double [] array = new double[300];
+//        System.out.println(Arrays.toString(array));
+
+        Set<Agent> set = Collections.newSetFromMap(new ConcurrentHashMap<Agent,Boolean>());
+        for(int i = 0; i < 5;i++){
+            set.add(new Agent(i,3,0,0,0));
+        }
+        System.out.println(selectSet(set, 2));
+    }
+
 }

@@ -9,7 +9,7 @@ public class QTable {
 
     private int agentId;
 
-    private double [][] q;  // q[i][j] i is me，j is partner
+    private double [][] q;  // q[i][j] action:i is me，action:j is partner
 
     public QTable(int agentId,int actionNum){
         this.agentId = agentId;
