@@ -94,7 +94,7 @@ public class Node {
     @Override
     public String toString() {
 //        return "Node[" + this.id + ','+this.centrality + ']' + "——>" + this.neighborsId;
-        return "Node[" + this.id +']';
+        return this.id+"";
     }
 
     @Override

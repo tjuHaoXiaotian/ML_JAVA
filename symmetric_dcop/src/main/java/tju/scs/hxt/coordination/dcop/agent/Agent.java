@@ -29,7 +29,7 @@ public class Agent extends Node{
 
     // coordination set
     @JsonIgnore
-    private Set<Agent> coordinationSet = new HashSet<Agent>();
+    private Set<Agent> coordinationSet = new HashSet<>();
 
     // default（init） coordination set
     @JsonIgnore
@@ -350,7 +350,7 @@ public class Agent extends Node{
         double maxLoss = Config.loseRate * Math.max(Math.abs(potentialExpectedUtility(defaultCoordinationSet)),potentialLossInLockOfCoordination(new HashSet<Agent>()));
 
         // 2：计算 coordination set
-        Set<Agent> tempCoordinationSet = new HashSet<>();
+        Set<Agent> tempCoordinationSet = new HashSet<Agent>();
         // 2.1：如果 coordination set 可以为空
         if(potentialLossInLockOfCoordination(tempCoordinationSet) < maxLoss){
             coordinationSet.clear();
@@ -382,43 +382,42 @@ public class Agent extends Node{
         }
     }
 
-    private static List<Set<Agent>> selectSet(Set<Agent> from,int csNum) {
+
+    private static List<Set<Agent>> selectSet(Set<Agent> range,int csNum) {
         List<Set<Agent>> result = new ArrayList<Set<Agent>>();
-//        if(csNum == 0){
-//            result.add(new HashSet<Agent>()); // 加入一个空结
-//            return result;
-//        }
-        if(csNum > from.size()){  // 无解
-            return null;
-        }else if(csNum == from.size()){  // 只有一个解
-            result.add(from);
+        if(csNum == 0){
+            result.add(new HashSet<Agent>());  // 一个空解
             return result;
         }
+
+        if(csNum == range.size()){
+            result.add(new HashSet<Agent>(range));
+            return result;
+        }
+
+        if(csNum > range.size()){
+            return result;
+        }
+
+        Set<Agent> temp = new HashSet<>();
         List<Set<Agent>> subResult;
-        Set<Agent> tempSet = Collections.newSetFromMap(new ConcurrentHashMap<Agent,Boolean>());
-        for(Agent agent:from){
+        Set<Agent> subRange = new HashSet<>(range);
+        for(Iterator<Agent> iterator = range.iterator();iterator.hasNext();){
+            Agent currentEle = iterator.next();
             // 1：放当前元素
-            tempSet.add(agent);
-            // 2：子问题
-            from.remove(agent);
-            subResult = selectSet(from,csNum-1);
-
-            for(Set<Agent> subItem:subResult){
-                subItem.addAll(tempSet);
-            }
-            result.addAll(subResult);
-
-            // 3：当前选择，下一种情况
-            // 4：不放当前元素
-            tempSet.remove(agent);
-            subResult = selectSet(from,csNum);
-            if(subResult == null){
+            temp.add(currentEle);
+            subRange.remove(currentEle);
+            subResult = selectSet(subRange,csNum-1);
+            if(subResult.size() > 0){
+                for(Set<Agent> subItem:subResult){
+                    subItem.addAll(temp);
+                }
+                result.addAll(subResult);
+                // 2：不放当前元素
+                temp.remove(currentEle);
+            }else{
                 break;
             }
-            for(Set<Agent> subItem:subResult){
-                subItem.addAll(tempSet);
-            }
-            result.addAll(subResult);
         }
         return result;
     }
@@ -522,11 +521,11 @@ public class Agent extends Node{
 //        double [] array = new double[300];
 //        System.out.println(Arrays.toString(array));
 
-        Set<Agent> set = Collections.newSetFromMap(new ConcurrentHashMap<Agent,Boolean>());
+        Set<Agent> set = new HashSet<>();
         for(int i = 0; i < 5;i++){
             set.add(new Agent(i,3,0,0,0));
         }
-        System.out.println(selectSet(set, 2));
+        System.out.println(selectSet(set, 5));
     }
 
 }
