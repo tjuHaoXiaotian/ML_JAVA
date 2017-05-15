@@ -92,7 +92,7 @@ public class Agent extends Node{
      * @param neighbor
      * @return
      */
-    public boolean sendMessageTo(Agent neighbor) {
+    public boolean sendMessageTo(Agent neighbor,int expId) {
         // 1： 向目标发送信息
         QTable q = qTables.get(neighbor.getId());
         Message message = new Message(this,neighbor,q.getQ());
@@ -111,6 +111,9 @@ public class Agent extends Node{
 
         // 5：比较当前消息，与上一条消息的differ
         double differ = calDiffer(neighbor,old,message);
+
+        // 6：统计通信次数信息
+        Analyze.communicationTimes.put("network:"+type+"-"+expId,Analyze.communicationTimes.get("network:"+type+"-"+expId)+1);
 
         return Math.abs(differ) > Config.messageDiffer;
     }
@@ -313,11 +316,14 @@ public class Agent extends Node{
 
     /**
      * 每一次训练
-     * @param network
+     * expId 0: run DCOP,not adjust the coordination set (loss rate 0)
+     * expId 1: run DCOP,adjuest the coordination set, loss rate 0
+     * expId 2: run DCOP,adjuest the coordination set, loss rate 0.01
+     * expId 3: run DCOP,adjuest the coordination set, loss rate 0.1
+     * @param expId
      */
-    public void training(int network){
+    public void training(int expId){
 //       learning============================================================================
-        Analyze.connectionTimes++;
 
         // 1:随机选择一个agent，交互
         int randomPartner = Config.getRandomNumber(0, getNeighborsSize() - 1);
@@ -327,27 +333,33 @@ public class Agent extends Node{
         int action = selectActionWithExploration();
         int partnerAction = partner.selectActionWithExploration();
 
+        // 3：observe 双方的action 选择 TODO:目前是统计所有 action（未加入最近限制）
+        this.observedPolicy.get(partner.getId()).selectActions(action,partnerAction);
+        partner.observedPolicy.get(this.getId()).selectActions(partnerAction,action);
+
         // 3:更新双方Q
         double reward = Config.rewards[action][partnerAction];
         updateQ(partner, action, partnerAction, reward);
 
         // 4：更新 parameters（学习率，探索率等）
-        updateLearningParameters(network);
-        partner.updateLearningParameters(network);
+        updateLearningParameters(expId);
+        partner.updateLearningParameters(expId);
 
         // 5:current reward
         currentPayoff = reward;
 
-        // 6：TODO 更新 Coordination Set
-        selectCoordinationSet();
+        if(expId != 0){
+            // 6：TODO 更新 Coordination Set
+            selectCoordinationSet(expId);
+        }
     }
 
     /**
      * TODO: dynamically select the coordination set (to reduce the messages sent by the algorithm)
      */
-    private void selectCoordinationSet() {
+    private void selectCoordinationSet(int expId) {
         // 1：cal max loss
-        double maxLoss = Config.loseRate * Math.max(Math.abs(potentialExpectedUtility(defaultCoordinationSet)),potentialLossInLockOfCoordination(new HashSet<Agent>()));
+        double maxLoss = Config.loseRate[expId] * Math.max(Math.abs(potentialExpectedUtility(defaultCoordinationSet)),potentialLossInLockOfCoordination(new HashSet<Agent>()));
 
         // 2：计算 coordination set
         Set<Agent> tempCoordinationSet = new HashSet<Agent>();
@@ -370,19 +382,26 @@ public class Agent extends Node{
                     found = true;
                     if(tempLoss < markedLoss){
                         markedLoss = tempLoss;
-                        markedCoordinationSet = new HashSet<>(selected);
+                        markedCoordinationSet = selected;
                     }
                 }
             }
         }
         if(found){
             coordinationSet = markedCoordinationSet;
+            System.out.println("resize the coordination set!" + defaultCoordinationSet.size() + " ——> " + coordinationSet.size());
         }else{
             coordinationSet = defaultCoordinationSet;
+//            System.out.println("use the default coordination set!" + defaultCoordinationSet.size() + " == " + coordinationSet.size());
         }
     }
 
-
+    /**
+     * 递归组合算法，遍历所有子集
+     * @param range
+     * @param csNum
+     * @return
+     */
     private static List<Set<Agent>> selectSet(Set<Agent> range,int csNum) {
         List<Set<Agent>> result = new ArrayList<Set<Agent>>();
         if(csNum == 0){
@@ -517,6 +536,14 @@ public class Agent extends Node{
         return coordinationSet;
     }
 
+    public double getExploreRate() {
+        return exploreRate;
+    }
+
+    public void setExploreRate(double exploreRate) {
+        this.exploreRate = exploreRate;
+    }
+
     public static void main(String args []){
 //        double [] array = new double[300];
 //        System.out.println(Arrays.toString(array));
@@ -527,5 +554,4 @@ public class Agent extends Node{
         }
         System.out.println(selectSet(set, 5));
     }
-
 }

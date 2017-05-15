@@ -111,11 +111,10 @@ public class GlobalCache {
                     // 设置权重信息
                     Centrality.setCentrality(parameter);  // 设置网络中 agent 的centrality
 
-                    // 添加对比试验：1（资源不受限)
-                    contrast_experiments.add(1, tju.scs.hxt.coordination.dcop.network.Network.deepCopy(parameter));
-
-                    // 添加对比试验：2（资源受限，规定资源数量内随机通信)
-                    contrast_experiments.add(2, tju.scs.hxt.coordination.dcop.network.Network.deepCopy(parameter));
+                    for(int expId = 1; expId < Config.contrast_experiment;expId++){
+                        // 添加对比试验
+                        contrast_experiments.add(expId, tju.scs.hxt.coordination.dcop.network.Network.deepCopy(parameter));
+                    }
 
                     // 生成网络拓扑图，for 界面展示
                     networks[type] = new Network();
@@ -181,16 +180,16 @@ public class GlobalCache {
         if(GlobalCache.experiment_avgRewards[type] == null){
             synchronized (getLock(type)){
                 if(GlobalCache.experiment_avgRewards[type] == null){
-                    GlobalCache.experiment_avgRewards[type] = new ArrayList<>(Config.contrast_experiment);
+                    GlobalCache.experiment_avgRewards[type] = new ArrayList<ArrayList<AvgReward>>(Config.contrast_experiment);
                     for(int i = 0;i < Config.contrast_experiment;i++){
                         GlobalCache.experiment_avgRewards[type].add(new ArrayList<AvgReward>());
                     }
                 }
             }
         }
-//        GlobalCache.experiment_avgRewards[type].get(expId).clear();
-//        GlobalCache.experiment_avgRewards[type].get(expId).addAll(avgRewards);
-        GlobalCache.experiment_avgRewards[type].set(expId,avgRewards);
+        GlobalCache.experiment_avgRewards[type].get(expId).clear();
+        GlobalCache.experiment_avgRewards[type].get(expId).addAll(avgRewards);
+//        GlobalCache.experiment_avgRewards[type].set(expId,avgRewards);
     }
 
     public static List<ArrayList<AvgReward>> getAvgReward(int type) {

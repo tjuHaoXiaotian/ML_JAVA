@@ -78,6 +78,7 @@ body{
     height:600px;
     background-color: white;
     margin-bottom: 20px;
+    position: relative;
 }
 
 #q-table{
@@ -128,14 +129,51 @@ body{
 
 .line-1 {
     fill: none;
-    stroke: red;
+    stroke: green;
     stroke-width: 1px;
 }
 
 .line-2 {
     fill: none;
-    stroke: green;
+    stroke: red;
     stroke-width: 1px;
+}
+
+.line-3 {
+    fill: none;
+    stroke: orange;
+    stroke-width: 1px;
+}
+
+
+.label{
+    position: absolute;
+    top:30px;
+    left: 50px;
+}
+
+.label div.exp{
+    width:200px;
+    height:25px;
+    font-size: 15px;
+    opacity: 0.5;
+}
+
+rect{
+    opacity: 0.5;
+}
+
+.label div.exp-0{
+    background-color: steelblue;
+}
+.label div.exp-1{
+    background-color: green;
+}
+.label div.exp-2{
+    background-color: red;
+}
+.label div.exp-3{
+    background-color: orange;
 }
 /* svg end */
 

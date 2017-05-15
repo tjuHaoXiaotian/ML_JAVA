@@ -1,5 +1,6 @@
 package tju.scs.hxt.coordination.dcop.agent;
 
+import tju.scs.hxt.coordination.dcop.Analyze;
 import tju.scs.hxt.coordination.dcop.Config;
 import tju.scs.hxt.coordination.dcop.network.Node;
 import tju.scs.hxt.coordination.dcop.web.GlobalCache;
@@ -67,6 +68,9 @@ public class TrainingThread extends Thread {
 
         // 2： 统计 round - avg reward 信息
         round++;
+        System.out.println("round: " + round + ",explore rate: "+getAvgExploreRate());
+        Analyze.rounds.put("network:"+type+"-"+expId,round);
+
         if(round % 50 == 0){
             if(round % 100 == 0){
                 Config.deltaExploreRate[type][expId] = Config.deltaExploreRate[type][expId] * 2;
@@ -117,7 +121,7 @@ public class TrainingThread extends Thread {
             for(Agent agent:GlobalCache.getAgents(type,expId)){
                 // 向 coordination set 中的每一个 agent 发送信息
                 for(Agent neighbor:agent.getCoordinationSet()){
-                    differEnough = agent.sendMessageTo(neighbor);
+                    differEnough = agent.sendMessageTo(neighbor,expId);
                     if(differEnough){
                         fixedPoint = false;
                     }
@@ -150,6 +154,15 @@ public class TrainingThread extends Thread {
         }
 
         return avgReward / GlobalCache.getAgents(type,expId).size();
+    }
+
+    private double getAvgExploreRate(){
+        double avgExploreRate = 0;
+        for(Agent agent:GlobalCache.getAgents(type,expId)){
+            avgExploreRate += agent.getExploreRate();
+        }
+
+        return avgExploreRate / GlobalCache.getAgents(type,expId).size();
     }
 
 

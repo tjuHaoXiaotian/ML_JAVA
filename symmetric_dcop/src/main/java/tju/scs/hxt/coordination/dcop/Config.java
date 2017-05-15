@@ -8,7 +8,7 @@ import java.util.Map;
  * Created by haoxiaotian on 2017/3/13 23:59.
  */
 public class Config {
-    public static final int contrast_experiment = 1;
+    public static final int contrast_experiment = 4;
 
     public static final int network_type = 6;
 
@@ -25,19 +25,17 @@ public class Config {
     public static final int recordedTimes = 20;
 
     // coordination set 选择时，允许的损失率
-    public static final double loseRate = 0.1;
-
-
+    public static final double [] loseRate = {0,0,0.01,0.1};
 
     // 系统 agent 探索率
     public static final double exploreRate = 1;
     public static final double [][] deltaExploreRate = {
-            {0.000009,0.0009,0.0009},
-            {0.000009,0.0009,0.0009},
-            {0.000009,0.0009,0.0009},
-            {0.000009,0.0009,0.0009},
-            {0.000009,0.0009,0.0009},
-            {0.000009,0.0009,0.0009}
+            {0.000009,0.000009,0.000009,0.000009},
+            {0.000009,0.000009,0.000009,0.000009},
+            {0.000009,0.000009,0.000009,0.000009},
+            {0.000009,0.000009,0.000009,0.000009},
+            {0.000009,0.000009,0.000009,0.000009},
+            {0.000009,0.000009,0.000009,0.000009}
     };
 
     public static double deltaLearningRateRef;

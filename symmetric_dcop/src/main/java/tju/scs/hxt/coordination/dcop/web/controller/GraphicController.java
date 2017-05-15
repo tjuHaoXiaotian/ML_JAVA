@@ -82,17 +82,23 @@ public class GraphicController {
 
     @RequestMapping(value = "/{type}/agents/rowActions",produces = {"application/json;charset=utf8"})
     public @ResponseBody
-    Map<Integer,Integer> getActions(@PathVariable("type") int type,@RequestParam("expId") int expId){
-        Map<Integer,Integer> actionSelection = new HashMap<Integer, Integer>();
+    Map<Integer,Map<Integer,Integer>> getActions(@PathVariable("type") int type){
+        Map<Integer,Map<Integer,Integer>> result = new HashMap<Integer, Map<Integer,Integer>>();
+
         int bestAction;
-        if(GlobalCache.getAgents(type,expId) == null){
-            return actionSelection;
+        for(int expId = 0; expId < Config.contrast_experiment;expId++){
+            Map<Integer,Integer> actionSelection = new HashMap<Integer, Integer>();
+            if(GlobalCache.getAgents(type,expId) == null){
+                result.put(expId,new HashMap<Integer, Integer>());
+            }else{
+                for(Agent agent:GlobalCache.getAgents(type,expId)){
+                    bestAction = agent.getMaxUtilityAction().getAction();
+                    actionSelection.put(bestAction,actionSelection.get(bestAction) == null?1:actionSelection.get(bestAction)+1);
+                }
+                result.put(expId,actionSelection);
+            }
         }
-        for(Agent agent:GlobalCache.getAgents(type,expId)){
-            bestAction = agent.getMaxUtilityAction().getAction();
-            actionSelection.put(bestAction,actionSelection.get(bestAction) == null?1:actionSelection.get(bestAction)+1);
-        }
-        return actionSelection;
+        return result;
     }
 
 

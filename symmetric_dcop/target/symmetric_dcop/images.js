@@ -2,6 +2,9 @@
  * Created by jack on 2017/5/3.
  */
 
+var Config = {
+    contrast_experiment:4
+};
 
 function Obj(url,type){
     return {
@@ -191,12 +194,6 @@ function Obj(url,type){
 
 
 
-            var sheet = d3.select(".item2")     //选择文档中的body元素
-                .append("svg")          //添加一个svg元素
-                .attr("width", width)       //设定宽度
-                .attr("height", height);    //设定高度
-
-
             var index = [0, 1, 2, 3, 4,5,6,7,8,9];
             var color = ["#0310FF", "#D605FF", "#FF1A1F", "#FF6F12", "#FFEC04","#93FF16","#0BFFF1","#0310FF","#D605FF","#FF1A1F"];
             var ordinal = d3.scale.ordinal()
@@ -210,69 +207,83 @@ function Obj(url,type){
                 .rangeRoundBands([0, width - padding.left - padding.right]);
 
             var yScale = d3.scale.ordinal()
-                .domain(d3.range(10))
+                .domain(d3.range(13))
                 .rangeRoundBands([height - padding.top - padding.bottom, 0]);
+
+            var rec,text,times = 0,timer,timer2,key,stopTimes = 0,stop = false;
+            stop = false;
+
+
+            var sheets = [],sheet;
+
             //定义x轴
             var xAxis = d3.svg.axis()
                 .scale(xScale)      //指定比例尺
                 .orient("bottom")   //指定刻度的方向
                 .ticks(100);          //指定刻度的数量
-
             //定义y轴
             var yAxis = d3.svg.axis()
                 .scale(yScale)
                 .orient("left");
 
-            sheet.append("g")
-                .attr("class","axis")
-                .attr("transform","translate(" + padding.left + "," + (height - padding.bottom) + ")")
-                .call(xAxis);
+            for(var expId = 0; expId < Config.contrast_experiment;expId++){
+                sheet = d3.select(".item2-"+expId)     //选择文档中的body元素
+                    .append("svg")          //添加一个svg元素
+                    .attr("width", width)       //设定宽度
+                    .attr("height", height);    //设定高度
+                sheet.append("g")
+                    .attr("class","axis")
+                    .attr("transform","translate(" + padding.left + "," + (height - padding.bottom) + ")")
+                    .call(xAxis);
 
-            sheet.append("g")
-                .attr("class","axis")
-                .attr("transform","translate(" + padding.left + "," + padding.top + ")")
-                .call(yAxis);
+                sheet.append("g")
+                    .attr("class","axis")
+                    .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+                    .call(yAxis);
 
-            var rec,text,times = 0,timer,timer2,key,count = 0,stopTimes = 0,stop = false;
-
-
-            stop = false;
+                sheets[expId+""] = sheet;
+            }
 
             timer = setInterval(function(){
-                d3.json(url+type+"/agents/rowActions?expId=0",function(error,root) {
+                d3.json(url+type+"/agents/rowActions",function(error,root) {
                     if (error) {
                         return console.log(error);
                     }
 //                console.log(root);
 
-                    count = 0;
-                    for(key in root) {
-                        rec = sheet.append("rect")
-                            .attr("class","MyRect")
-                            .attr("transform","translate(" + padding.left + "," + padding.top + ")")
-                            .attr("x", xScale(times))
-                            .attr("y",yScale(key))
-                            .attr("width", xScale.rangeBand())
-                            .attr("height", yScale.rangeBand())
-                            .style("fill",ordinal(key));
+                    for(key in root){
+                        for(var key2 in root[key]) {
+                            //console.log(key);
+                            //console.log(key2);
+                            //console.log(root[key]);
+                            //console.log(sheets);
+                            rec = sheets[key].append("rect")
+                                .attr("class","MyRect")
+                                .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+                                .attr("x", xScale(times))
+                                .attr("y",yScale(key2))
+                                .attr("width", xScale.rangeBand())
+                                .attr("height", yScale.rangeBand())
+                                .style("fill",ordinal(key2));
 
-                        //添加文字元素
-                        text = sheet
-                            .append("text")
-                            .attr("class","MyText")
-                            .attr("transform","translate(" + padding.left + "," + padding.top + ")")
-                            .attr("x", xScale(times))
-                            .attr("y",yScale(key))
-                            .attr("dx",function(){
-                                //                    return (xScale.rangeBand())/2;
-                                return 0;
-                            })
-                            .attr("dy",function(d){
-                                return (yScale.rangeBand())/2;
-                            })
-                            .text(root[key]);
-                        count++;
+                            //添加文字元素
+                            text = sheets[key]
+                                .append("text")
+                                .attr("class","MyText")
+                                .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+                                .attr("x", xScale(times))
+                                .attr("y",yScale(key2))
+                                .attr("dx",function(){
+                                    //                    return (xScale.rangeBand())/2;
+                                    return 0;
+                                })
+                                .attr("dy",function(d){
+                                    return (yScale.rangeBand())/2;
+                                })
+                                .text(root[key][key2]);
+                        }
                     }
+
                     if(stop){
                         clearInterval(timer)
                     }
@@ -282,14 +293,16 @@ function Obj(url,type){
                 times++;
 
                 if(times >50){
-                    //alert("remove")
-                    sheet.selectAll("rect").remove();
-                    sheet.selectAll("text").remove();
+                    for(var i = 0;i < Config.contrast_experiment;i++){
+                        //alert("remove")
+                        sheets[i+""].selectAll("rect").remove();
+                        sheets[i+""].selectAll("text").remove();
+                    }
+
                     times = 0;
                 }
 
             },5000);
-
 
 
 //        drawSide(0);
@@ -312,8 +325,6 @@ function Obj(url,type){
                 });
 
             },2000);
-
-
 
 
             function drawSide(type) {
@@ -352,28 +363,14 @@ function Obj(url,type){
 //                    console.log("数据", d);
 //                    return d.round;
 //                }));
-                    var maxX = 0;
-                    maxX = d3.max(data[0],function (d) {
-//                    console.log("数据", d);
-                        return d.round;
-                    }) > maxX?d3.max(data[0],function (d) {
-//                    console.log("数据", d);
-                        return d.round;
-                    }):maxX;
-//                    maxX = d3.max(data[1],function (d) {
-////                    console.log("数据", d);
-//                        return d.round;
-//                    }) > maxX?d3.max(data[1],function (d) {
-////                    console.log("数据", d);
-//                        return d.round;
-//                    }):maxX;
-//                    maxX = d3.max(data[2],function (d) {
-////                    console.log("数据", d);
-//                        return d.round;
-//                    }) > maxX?d3.max(data[2],function (d) {
-////                    console.log("数据", d);
-//                        return d.round;
-//                    }):maxX;
+                    var maxX = 0,tempMax = 0;
+                    for(expId = 0; expId < Config.contrast_experiment;expId++){
+                        tempMax = d3.max(data[expId],function (d) {
+                            return d.round;
+                        });
+                        maxX = tempMax > maxX ? tempMax:maxX;
+                    }
+
                     x.domain([0,maxX]);
 
                     y.domain([-1,1]);
@@ -394,7 +391,7 @@ function Obj(url,type){
                         .style("text-anchor", "end")
                         .text("平均 payoff");
 
-                    for(expId = 0; expId < 1; expId++){
+                    for(expId = 0; expId < Config.contrast_experiment; expId++){
                         svgSide.append("path")
                             .datum(data[expId])
                             .attr("class", "line-"+expId)

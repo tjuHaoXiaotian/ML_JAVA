@@ -10,14 +10,19 @@ import java.util.Map;
  */
 public class Analyze {
 
-    public static Map<String,Integer> times = new HashMap<>();
+    public static Map<String,Integer> communicationTimes = new HashMap<String, Integer>();
+    public static Map<String,Integer> rounds = new HashMap<String, Integer>();
 
-    public static int communicationTimes = 0;
-    public static int connectionTimes = 0;
-
+    static {
+        for(int type = 0; type < Config.network_type;type++){
+            for(int expId = 0; expId < Config.contrast_experiment;expId++){
+                communicationTimes.put("network:"+type+"-"+expId,0);
+                rounds.put("network:"+type+"-"+expId,0);
+            }
+        }
+    }
     public void printAnalysis(){
-        System.out.println(Analyze.times);
-        System.out.println("communicationTimes:" + Analyze.communicationTimes);
-        System.out.println("connectionTimes:" + Analyze.connectionTimes);
+        System.out.println("communication times:" + Analyze.communicationTimes);
+        System.out.println("round times:" + Analyze.rounds);
     }
 }
