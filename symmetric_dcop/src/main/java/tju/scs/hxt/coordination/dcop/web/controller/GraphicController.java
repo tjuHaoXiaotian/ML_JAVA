@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import tju.scs.hxt.coordination.dcop.Analyze;
 import tju.scs.hxt.coordination.dcop.Config;
 import tju.scs.hxt.coordination.dcop.agent.Agent;
 import tju.scs.hxt.coordination.dcop.agent.StopThread;
@@ -36,12 +37,18 @@ public class GraphicController {
     public @ResponseBody
     Map resetNetwork(@PathVariable("type") int type){
         GlobalCache.setConverge(type,true);
+
         try {
+            // 让所有线程自动退出
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        System.out.println(Thread.activeCount());
+
         GlobalCache.clearAgents(type);
+
         Map<String,Integer> result = new HashMap<>();
         result.put("status",200);
         return result;
@@ -70,6 +77,14 @@ public class GraphicController {
 //        return GlobalCache.getAvgReward(type).get(0);
         return GlobalCache.getAvgReward(type);
     }
+
+    @RequestMapping(value = "/{type}/communications",produces = {"application/json;charset=utf8"})
+    public @ResponseBody
+    Map<Integer,Integer> getCommunicationTimes(@PathVariable("type") int type){
+        return Analyze.getCommunications(type);
+    }
+
+
 
     private Agent getAgentById(List<Agent> agents,int id){
         for(Agent agent:agents){
@@ -143,40 +158,42 @@ public class GraphicController {
         synchronized (GlobalCache.getLock(type)) {
             if (!GlobalCache.isRunningState(type)) {
                 for(int i = 0; i <Config.contrast_experiment;i++){
-                    final int expId = i;
-                    Thread thread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
+//                    if(i == 5){
+                        System.out.println("new thread for type"+type+":"+i+" restart");
+                        final int expId = i;
+                        Thread thread = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
 
-                            final CountDownLatch endGate = new CountDownLatch(1);
+                                final CountDownLatch endGate = new CountDownLatch(1);
 
-                            // 开始训练线程
-                            TrainingThread trainingThread = new TrainingThread(type,expId);
+                                // 开始训练线程
+                                TrainingThread trainingThread = new TrainingThread(type,expId);
 
-                            trainingThread.setEndGate(endGate);
+                                trainingThread.setEndGate(endGate);
 
-                            trainingThread.start();
+                                trainingThread.start();
 
-                            long startTime = System.currentTimeMillis();
+                                long startTime = System.currentTimeMillis();
 
-                            // 开始轮训线程：以判断整个agent网络是否收敛
-                            Thread stopThread = new StopThread(type,expId);
-                            stopThread.start();
+                                // 开始轮训线程：以判断整个agent网络是否收敛
+                                Thread stopThread = new StopThread(type,expId);
+                                stopThread.start();
 
-                            try {
-                                endGate.await();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
+                                try {
+                                    endGate.await();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+
+                                long endTime = System.currentTimeMillis();
+
+                                System.out.println("网络：["+ type + "," + expId + "] 运行了 "+(((double)(endTime - startTime)) / 1000)+" s");
                             }
-
-                            long endTime = System.currentTimeMillis();
-
-                            System.out.println("网络："+ type +" 运行了 "+(((double)(endTime - startTime)) / 1000)+" s");
-                        }
-                    });
-                    thread.start();
-                }
-
+                        });
+                        thread.start();
+                    }
+//                }
 
 
                 GlobalCache.setRunningState(type,true);

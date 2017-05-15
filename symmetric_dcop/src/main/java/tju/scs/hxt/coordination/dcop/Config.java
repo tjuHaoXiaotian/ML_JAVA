@@ -8,7 +8,7 @@ import java.util.Map;
  * Created by haoxiaotian on 2017/3/13 23:59.
  */
 public class Config {
-    public static final int contrast_experiment = 4;
+    public static final int contrast_experiment = 6;
 
     public static final int network_type = 6;
 
@@ -22,21 +22,34 @@ public class Config {
     public static final double messageDiffer = 0.00001;
 
     // 可用（统计对手action次数而得出）概率的总次数下限
-    public static final int recordedTimes = 20;
+    public static final int recordedTimesFloor = 20;
+    public static final int observationWindow = 20;
+
 
     // coordination set 选择时，允许的损失率
-    public static final double [] loseRate = {0,0,0.01,0.1};
+    public static final double [] loseRate = {0,0,0.01,0.1,0.5,0.7};
 
     // 系统 agent 探索率
     public static final double exploreRate = 1;
-    public static final double [][] deltaExploreRate = {
-            {0.000009,0.000009,0.000009,0.000009},
-            {0.000009,0.000009,0.000009,0.000009},
-            {0.000009,0.000009,0.000009,0.000009},
-            {0.000009,0.000009,0.000009,0.000009},
-            {0.000009,0.000009,0.000009,0.000009},
-            {0.000009,0.000009,0.000009,0.000009}
+    public static double [][] deltaExploreRate = {
+            {0.000009,0.000009,0.000009,0.000009,0.000009,0.000009},  // grid
+            {0.000009,0.000009,0.000009,0.000009,0.000009,0.000009},  // regular
+            {0.000009,0.000009,0.000009,0.000009,0.000009,0.000009},  // random regular
+            {0.000009,0.000009,0.000009,0.000009,0.000009,0.000009},  // random
+            {0.004, 0.004, 0.004, 0.004, 0.0035, 0.0009}, // small world
+            {0.000014,0.000011,0.000009,0.000009,0.000009,0.000009}   // scale free
     };
+
+    public static void resetDeltaExploreRate(){
+        deltaExploreRate = new double[][]{
+                {0.000009, 0.000009, 0.000009, 0.000009, 0.000009, 0.000009}, // grid
+                {0.000009, 0.000009, 0.000009, 0.000009, 0.000009, 0.000009}, // regular
+                {0.000009, 0.000009, 0.000009, 0.000009, 0.000009, 0.000009}, // random regular
+                {0.000009, 0.000009, 0.000009, 0.000009, 0.000009, 0.000009}, // random
+                {0.004, 0.004, 0.004, 0.004, 0.0035, 0.0009}, // small world
+                {0.000014, 0.000011, 0.000009, 0.000009, 0.000009, 0.000009}  // scale free
+        };
+    }
 
     public static double deltaLearningRateRef;
 

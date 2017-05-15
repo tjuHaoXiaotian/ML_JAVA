@@ -1,5 +1,6 @@
 package tju.scs.hxt.coordination.dcop.web;
 
+import tju.scs.hxt.coordination.dcop.Analyze;
 import tju.scs.hxt.coordination.dcop.Config;
 import tju.scs.hxt.coordination.dcop.agent.Agent;
 import tju.scs.hxt.coordination.dcop.network.Centrality;
@@ -142,15 +143,29 @@ public class GlobalCache {
       */
     public static void clearAgents(int type){
         synchronized (getLock(type)){
+            // 1：网络结构清空
+            experiment_agents[type].clear();
+            experiment_avgRewards[type].clear();
             experiment_agents[type] = null;
             experiment_avgRewards[type] = null;
 
-            for(int i = 0; i < Config.contrast_experiment;i++){
-                setConverge(type,i,false);
-            }
-            // 对比试验
-            setRunningState(type,false);
+            // 2：初始化
+            reInit(type);
+
+            // 3：初始化 DeltaExploreRate
+            Config.resetDeltaExploreRate();
         }
+    }
+
+    public static void reInit(int type){
+        // 2：初始化统计信息
+        Analyze.init(type);
+        // 3： 设置收敛状态为为收敛
+        for(int i = 0; i < Config.contrast_experiment;i++){
+            setConverge(type,i,false);
+        }
+        // 4：设置线程运行状态为 false
+        setRunningState(type,false);
     }
 
     public static Network getNetworks(int type) {
@@ -158,7 +173,9 @@ public class GlobalCache {
     }
 
     public static boolean isRunningState(int type) {
-        return runningState[type];
+        synchronized (getLock(type)) {
+            return runningState[type];
+        }
     }
 
     /**
@@ -167,7 +184,9 @@ public class GlobalCache {
      * @param runningState
      */
     public static void setRunningState(int type,boolean runningState) {
-        GlobalCache.runningState[type] = runningState;
+        synchronized (getLock(type)) {
+            GlobalCache.runningState[type] = runningState;
+        }
     }
 
     /**
@@ -210,7 +229,6 @@ public class GlobalCache {
      * @return
      */
     public static boolean isConverge(int type,int expId) {  // 判断是否收敛于同一个action
-        synchronized (getLock(type)) {
             switch (type) {
                 case 0:
                     return converge_0[expId];
@@ -227,7 +245,6 @@ public class GlobalCache {
                 default:
                     return converge_3[expId];
             }
-        }
     }
 
     public static void setConverge(int type,boolean value){
@@ -241,31 +258,30 @@ public class GlobalCache {
      * @param type
      */
     public static void setConverge(int type,int expId,boolean value){
-        synchronized (getLock(type)){
-            switch (type){
-                case 0:
-                    converge_0[expId] = value;
-                    break;
-                case 1:
-                    converge_1[expId] = value;
-                    break;
-                case 2:
-                    converge_2[expId] = value;
-                    break;
-                case 3:
-                    converge_3[expId] = value;
-                    break;
-                case 4:
-                    converge_4[expId] = value;
-                    break;
-                case 5:
-                    converge_5[expId] = value;
-                    break;
-                default:
-                    converge_3[expId] = value;
-                    break;
-            }
+        switch (type){
+            case 0:
+                converge_0[expId] = value;
+                break;
+            case 1:
+                converge_1[expId] = value;
+                break;
+            case 2:
+                converge_2[expId] = value;
+                break;
+            case 3:
+                converge_3[expId] = value;
+                break;
+            case 4:
+                converge_4[expId] = value;
+                break;
+            case 5:
+                converge_5[expId] = value;
+                break;
+            default:
+                converge_3[expId] = value;
+                break;
         }
+
         System.out.println("type:" + type + " set converge = " + value);
     }
 }

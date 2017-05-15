@@ -42,17 +42,13 @@ public class StopThread extends Thread{
                     maxCount = actionSelection.get(bestAction);
                 }
             }
-            part1 = ((double)maxCount) / GlobalCache.getAgents(type,expId).size() > 0.99;
+            part1 = ((double)maxCount) / GlobalCache.getAgents(type,expId).size() > 0.98;
         }else{
             part1 = false;
         }
 
-        if(part1){  // 各个agent已经选到了同一个action上
-
-        }
-
         // 2：平均收益是否逼近 1
-        part2 = getAvgReward() > 0.99;
+        part2 = getAvgReward() > 0.98;
 
         return part1 && part2;
     }
@@ -76,6 +72,9 @@ public class StopThread extends Thread{
 
     private double getAvgReward(){
         double avgReward = 0;
+        if(GlobalCache.getAgents(type,expId) == null){
+            return avgReward;
+        }
         for(Agent agent:GlobalCache.getAgents(type,expId)){
             if(GlobalCache.isConverge(type,expId)){
                 return 1;

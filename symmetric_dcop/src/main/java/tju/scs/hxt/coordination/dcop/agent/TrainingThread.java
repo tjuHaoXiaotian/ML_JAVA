@@ -68,10 +68,10 @@ public class TrainingThread extends Thread {
 
         // 2： 统计 round - avg reward 信息
         round++;
-        System.out.println("round: " + round + ",explore rate: "+getAvgExploreRate());
-        Analyze.rounds.put("network:"+type+"-"+expId,round);
+//        System.out.println("round: " + round + ",explore rate: "+getAvgExploreRate());
+        Analyze.incRoundTimes(type,expId,round);
 
-        if(round % 50 == 0){
+        if(round % 30 == 0){
             if(round % 100 == 0){
                 Config.deltaExploreRate[type][expId] = Config.deltaExploreRate[type][expId] * 2;
             }

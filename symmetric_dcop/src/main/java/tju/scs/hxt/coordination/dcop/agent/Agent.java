@@ -35,8 +35,6 @@ public class Agent extends Node{
     @JsonIgnore
     private Set<Agent> defaultCoordinationSet = new HashSet<Agent>();
 
-
-
     @JsonIgnore
     private double currentPayoff;
 
@@ -113,7 +111,7 @@ public class Agent extends Node{
         double differ = calDiffer(neighbor,old,message);
 
         // 6：统计通信次数信息
-        Analyze.communicationTimes.put("network:"+type+"-"+expId,Analyze.communicationTimes.get("network:"+type+"-"+expId)+1);
+        Analyze.incCommunicationTimes(type,expId);
 
         return Math.abs(differ) > Config.messageDiffer;
     }
