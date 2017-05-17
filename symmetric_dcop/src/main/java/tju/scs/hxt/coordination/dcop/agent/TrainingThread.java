@@ -109,7 +109,7 @@ public class TrainingThread extends Thread {
     }
 
     private void runDCOP(boolean anyTimeExtension){
-        int deadline = 5;  //TODO:设计一个deadline去衡量当前计算是否超时
+        int deadline = Config.deadline;  //TODO:设计一个deadline去衡量当前计算是否超时
         int currentTime = 0;
         double m = -1000000;
         boolean fixedPoint = false,differEnough;  // 停止标志

@@ -341,7 +341,7 @@ public class Agent extends Node{
 
         // 4：更新 parameters（学习率，探索率等）
         updateLearningParameters(expId);
-        partner.updateLearningParameters(expId);
+//        partner.updateLearningParameters(expId);
 
         // 5:current reward
         currentPayoff = reward;
@@ -349,6 +349,7 @@ public class Agent extends Node{
         if(expId != 0){
             // 6：TODO 更新 Coordination Set
             selectCoordinationSet(expId);
+//            partner.selectCoordinationSet(expId);
         }
     }
 

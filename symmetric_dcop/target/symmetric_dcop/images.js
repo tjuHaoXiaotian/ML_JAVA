@@ -3,7 +3,7 @@
  */
 
 var Config = {
-    contrast_experiment:4
+    contrast_experiment:6
 };
 
 function Obj(url,type){
@@ -33,7 +33,7 @@ function Obj(url,type){
             var width = 950;  //画布的宽度
             var height = 600;   //画布的高度
             //画布周边的空白
-            var padding = {left:30, right:30, top:20, bottom:20};
+            var padding = {left:40, right:30, top:20, bottom:20};
             var delta = 50;
             var nodes_r = 10;
             var svg = d3.select(".item1")     //选择文档中的body元素
@@ -45,7 +45,7 @@ function Obj(url,type){
                 if( error ){
                     return console.log(error);
                 }
-                console.log(root);
+                // console.log(root);
 
 
                 //      其中 linkDistance 是结点间的距离，
@@ -84,7 +84,7 @@ function Obj(url,type){
                     })
                     .call(force.drag)  //使得节点能够拖动
                     .on("mousedown",function(d) {
-                        console.log(d3.event);
+                        // console.log(d3.event);
                         var button = d3.event.buttons;
                         if (2 == button) { //右键为2
                             queryQ(d.id,d3.event.clientX,d3.event.clientY);
@@ -142,7 +142,7 @@ function Obj(url,type){
                     dataType: 'json',
                     data:$("#main-search-form").serialize()
                 }).success(function(data) {
-                    console.log(data);
+                    // console.log(data);
                     initQTable(data,x,y);
                 }).error(function(){
                     alert("查询失败");
@@ -192,7 +192,8 @@ function Obj(url,type){
                 table.css("left",x);
             }
 
-
+            var rec,text,times = 0,timer,timer2,key,stopTimes = 0,stop = false;
+            stop = false;
 
             var index = [0, 1, 2, 3, 4,5,6,7,8,9];
             var color = ["#0310FF", "#D605FF", "#FF1A1F", "#FF6F12", "#FFEC04","#93FF16","#0BFFF1","#0310FF","#D605FF","#FF1A1F"];
@@ -203,16 +204,12 @@ function Obj(url,type){
             //定义比例尺
 
             var xScale = d3.scale.ordinal()
-                .domain(d3.range(50))
+                .domain(d3.range(30))
                 .rangeRoundBands([0, width - padding.left - padding.right]);
 
             var yScale = d3.scale.ordinal()
                 .domain(d3.range(13))
                 .rangeRoundBands([height - padding.top - padding.bottom, 0]);
-
-            var rec,text,times = 0,timer,timer2,key,stopTimes = 0,stop = false;
-            stop = false;
-
 
             var sheets = [],sheet;
 
@@ -220,7 +217,7 @@ function Obj(url,type){
             var xAxis = d3.svg.axis()
                 .scale(xScale)      //指定比例尺
                 .orient("bottom")   //指定刻度的方向
-                .ticks(100);          //指定刻度的数量
+                .ticks(30);          //指定刻度的数量
             //定义y轴
             var yAxis = d3.svg.axis()
                 .scale(yScale)
@@ -244,68 +241,65 @@ function Obj(url,type){
                 sheets[expId+""] = sheet;
             }
 
+            function drawActionSelection(root){
+                var rectPadding = 2;
+                for(key in root){
+                    for(var key2 in root[key]) {
+                        //console.log(key);
+                        //console.log(key2);
+                        //console.log(root[key]);
+                        //console.log(sheets);
+                        rec = sheets[key].append("rect")
+                            .attr("class","MyRect")
+                            .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+                            .attr("x", xScale(times)+rectPadding/2)
+                            .attr("y",yScale(key2))
+                            .attr("width", xScale.rangeBand() - rectPadding)
+                            .attr("height", yScale.rangeBand())
+                            .style("fill",ordinal(key2));
+
+                        //添加文字元素
+                        text = sheets[key]
+                            .append("text")
+                            .attr("class","MyText")
+                            .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+                            .attr("x", xScale(times))
+                            .attr("y",yScale(key2))
+                            .attr("dx",function(){
+                                //                    return (xScale.rangeBand())/2;
+                                return 0;
+                            })
+                            .attr("dy",function(d){
+                                return (yScale.rangeBand())/2;
+                            })
+                            .text(root[key][key2]);
+                    }
+                }
+                if(stop){
+                    clearInterval(timer)
+                }
+                times++;
+                if(times >30){
+                    for(var i = 0;i < Config.contrast_experiment;i++){
+                        //alert("remove")
+                        sheets[i+""].selectAll("rect.MyRect").remove();
+                        sheets[i+""].selectAll("text.MyText").remove();
+                    }
+                    times = 0;
+                }
+            }
+
             timer = setInterval(function(){
                 d3.json(url+type+"/agents/rowActions",function(error,root) {
                     if (error) {
                         return console.log(error);
                     }
 //                console.log(root);
-
-                    for(key in root){
-                        for(var key2 in root[key]) {
-                            //console.log(key);
-                            //console.log(key2);
-                            //console.log(root[key]);
-                            //console.log(sheets);
-                            rec = sheets[key].append("rect")
-                                .attr("class","MyRect")
-                                .attr("transform","translate(" + padding.left + "," + padding.top + ")")
-                                .attr("x", xScale(times))
-                                .attr("y",yScale(key2))
-                                .attr("width", xScale.rangeBand())
-                                .attr("height", yScale.rangeBand())
-                                .style("fill",ordinal(key2));
-
-                            //添加文字元素
-                            text = sheets[key]
-                                .append("text")
-                                .attr("class","MyText")
-                                .attr("transform","translate(" + padding.left + "," + padding.top + ")")
-                                .attr("x", xScale(times))
-                                .attr("y",yScale(key2))
-                                .attr("dx",function(){
-                                    //                    return (xScale.rangeBand())/2;
-                                    return 0;
-                                })
-                                .attr("dy",function(d){
-                                    return (yScale.rangeBand())/2;
-                                })
-                                .text(root[key][key2]);
-                        }
-                    }
-
-                    if(stop){
-                        clearInterval(timer)
-                    }
-
+                    drawActionSelection(root)
                 });
-
-                times++;
-
-                if(times >50){
-                    for(var i = 0;i < Config.contrast_experiment;i++){
-                        //alert("remove")
-                        sheets[i+""].selectAll("rect").remove();
-                        sheets[i+""].selectAll("text").remove();
-                    }
-
-                    times = 0;
-                }
 
             },5000);
 
-
-//        drawSide(0);
             timer2 = setInterval(function(){
 
                 $.ajax({
@@ -315,9 +309,11 @@ function Obj(url,type){
                 }).success(function(data){
                     stop = data.status;
                     if(stop){
-                        clearInterval(timer2)
+                        drawSide(type);
+                        drawRectangleSheet(type);
+                        clearInterval(timer2);
                     }else{
-                        drawSide(type)
+                        drawSide(type);
                     }
 
                 }).error(function(error){
@@ -325,7 +321,6 @@ function Obj(url,type){
                 });
 
             },2000);
-
 
             function drawSide(type) {
 
@@ -402,6 +397,106 @@ function Obj(url,type){
                 });
             }
 
+            function drawRectangleSheet(type) {
+
+                d3.select(".item4").select("svg").remove();
+
+                var svgSide = d3.select(".item4")     //选择文档中的body元素
+                    .append("svg")          //添加一个svg元素
+                    .attr("width", width)       //设定宽度
+                    .attr("height", height);    //设定高度
+
+                //x轴的比例尺
+                var xScale = d3.scale.ordinal()
+                    .domain(d3.range(Config.contrast_experiment))
+                    .rangeRoundBands([0, width - padding.left - padding.right]);
+
+//y轴的比例尺
+                var yScale = d3.scale.linear()
+                    .range([height - padding.top - padding.bottom, 0]);
+
+                var xAxis = d3.svg.axis()
+                    .scale(xScale)
+                    .orient("bottom");
+
+                var yAxis = d3.svg.axis()
+                    .scale(yScale)
+                    .orient("left");
+
+                d3.json(url+ type +"/communications", function (error, data) {
+                    if (error) throw error;
+
+                    var rectPadding = 100;
+                    // console.log(data);
+                    var datas = [];
+                    for(var key in data){
+                        datas[key] = data[key];
+                    }
+
+                    yScale.domain([0,d3.max(datas) / 1000 * 2]);
+
+                    svgSide.append("g")
+                        .attr("class", "x axis")
+                        .attr("transform","translate(" + padding.left + "," + (height - padding.bottom) + ")")
+                        .call(xAxis);
+
+                    svgSide.append("g")
+                        .attr("class", "y axis")
+                        .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+                        .call(yAxis)
+                        .append("text")
+                        .attr("transform", "rotate(-90)")
+                        .attr("y", 6)
+                        .attr("dy", ".71em")
+                        .style("text-anchor", "end")
+                        .text("Messages sent times x1000");
+
+                    //添加矩形元素
+                    var rects = svgSide.selectAll(".MyRect")
+                        .data(datas)
+                        .enter()
+                        .append("rect")
+                        .attr("class",function(d,i){
+                            return "rect-"+i;
+                        })
+                        .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+                        .attr("x", function(d,i){
+                            return xScale(i) + rectPadding/2;
+                        } )
+                        .attr("y",function(d){
+                            // console.log(d);
+                            return yScale(d/1000);
+                        })
+                        .attr("width", xScale.rangeBand() - rectPadding )
+                        .attr("height", function(d){
+                            return height - padding.top - padding.bottom - yScale(d/1000);
+                        });
+
+//添加文字元素
+                    var texts = svgSide.selectAll(".MyText")
+                        .data(datas)
+                        .enter()
+                        .append("text")
+                        .attr("class","MyText")
+                        .attr("transform","translate(" + padding.left + "," + padding.top + ")")
+                        .attr("x", function(d,i){
+                            return xScale(i) + rectPadding/2 - 28;
+                        } )
+                        .attr("y",function(d){
+                            return yScale(d/1000);
+                        })
+                        .attr("dx",function(){
+                            return (xScale.rangeBand() - rectPadding)/2;
+                        })
+                        .attr("dy",function(d){
+                            return 20;
+                        })
+                        .text(function(d){
+                            return d/1000;
+                        });
+
+                });
+            }
         }
     }
 }
