@@ -36,7 +36,8 @@ public class StopThread extends Thread{
         int bestAction,maxCount = 0;
         if(GlobalCache.getAgents(type,expId) != null) {
             for (Agent agent : GlobalCache.getAgents(type,expId)) {
-                bestAction = agent.getMaxUtilityAction().getAction();
+//                bestAction = agent.getMaxUtilityAction().getAction();
+                bestAction = agent.getMaxAction();
                 actionSelection.put(bestAction, actionSelection.get(bestAction) == null ? 1 : actionSelection.get(bestAction) + 1);
                 if (actionSelection.get(bestAction) > maxCount) {
                     maxCount = actionSelection.get(bestAction);

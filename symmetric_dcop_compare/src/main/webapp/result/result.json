@@ -1,0 +1,13 @@
+
+"communication times": {
+          "network:5-3": 734644,
+          "network: 5-2": 738559,
+          "network: 5-1": 766800,
+          "network: 5-0": 806400,
+},
+"round times": {
+"network: 5-3":1014,
+"network: 5-2":992,
+"network: 5-1":1030,
+"network: 5-0":1398
+}

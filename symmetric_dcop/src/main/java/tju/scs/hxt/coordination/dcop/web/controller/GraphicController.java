@@ -124,24 +124,31 @@ public class GraphicController {
                 switch (type){
                     case 0:  // 网格结构
                         GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateGridNetworkAsList(10, 10,0),0);
+//                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateGridNetworkAsList(2, 2,0),0);
                         break;
                     case 1:  // regular
                         GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRegularGraph(100, 5,1),1);
+//                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRegularGraph(10, 5,1),1);
                         break;
                     case 2:  // random regular
                         GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomRegularGraph(100, 5,2),2);
+//                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomRegularGraph(100, 5,2),2);
                         break;
                     case 3:  // random
                         GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomGraph(100, 0.08,3),3);
+//                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomGraph(25, 0.3,3),3);
                         break;
                     case 4:  // small world
                         GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(100, 5, 0.6,4),4);
+//                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(35, 4, 0.6,4),4);
                         break;
                     case 5:  // scale free
                         GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateScaleFreeGraph(100, 1,5),5);
+//                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateScaleFreeGraph(35, 1,5),5);
                         break;
                     default: // small world
                         GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(100, 3, 0.6,4),4);
+//                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(100, 3, 0.6,4),4);
                         break;
                 }
             }

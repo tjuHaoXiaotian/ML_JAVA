@@ -3,8 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>tju.scs.hxt.coordination</groupId>
   <artifactId>symmetric_fmq</artifactId>
-  <packaging>war</packaging>
+  <packaging>pom</packaging>
   <version>1.0-SNAPSHOT</version>
+  <modules>
+    <module>../symmetric_dcop_compare</module>
+  </modules>
   <name>symmetric_fmq Maven Webapp</name>
   <url>http://maven.apache.org</url>
   <dependencies>

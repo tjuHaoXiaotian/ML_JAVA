@@ -58,7 +58,7 @@ function Obj(url,type){
                     .size([width,height])
                     .linkDistance(200)
 //                    .linkStrength(0.8)
-                    .gravity(0.6)
+                    .gravity(0.2)
                     .charge(-1000)
                     .start();
 
@@ -102,7 +102,8 @@ function Obj(url,type){
                     .attr("dx", 20)
                     .attr("dy", 8)
                     .text(function(d){
-                        return d.id + ":" + d.centrality;
+                        //return d.id + ":" + d.centrality;
+                        return d.id;
                     });
 
 

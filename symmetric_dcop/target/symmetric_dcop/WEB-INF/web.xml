@@ -42,8 +42,8 @@
 
     
     <welcome-file-list>
-        <!--<welcome-file>index5.html</welcome-file>-->
-        <welcome-file>index4.html</welcome-file>
+        <welcome-file>index5.html</welcome-file>
+        <!--<welcome-file>index4.html</welcome-file>-->
     </welcome-file-list>
 
 

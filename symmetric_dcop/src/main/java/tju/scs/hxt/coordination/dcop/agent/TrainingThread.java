@@ -68,7 +68,7 @@ public class TrainingThread extends Thread {
 
         // 2： 统计 round - avg reward 信息
         round++;
-//        System.out.println("round: " + round + ",explore rate: "+getAvgExploreRate());
+        System.out.println("round: " + round + ",explore rate: "+getAvgExploreRate());
         Analyze.incRoundTimes(type,expId,round);
 
         if(round % 30 == 0){
@@ -94,6 +94,9 @@ public class TrainingThread extends Thread {
 
             // 3：初始化各个 agent 的 coordination set
             agent.initCoordinationSet();
+
+            // 4: 初始化 avg reward
+            GlobalCache.initAvgReward(type);
         }
     }
 

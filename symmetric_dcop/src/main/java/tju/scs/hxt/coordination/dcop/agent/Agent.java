@@ -155,6 +155,11 @@ public class Agent extends Node{
     public void setMaxAction(int maxAction) {
         this.maxAction = maxAction;
     }
+
+    public int getMaxAction() {
+        return maxAction;
+    }
+
     /**
      * 以一定的探索率选择action
      * @return selected action with current policy
