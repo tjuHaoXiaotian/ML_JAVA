@@ -8,7 +8,7 @@ import java.util.Map;
  * Created by haoxiaotian on 2017/3/13 23:59.
  */
 public class Config {
-    public static final int contrast_experiment = 6;
+    public static final int contrast_experiment = 7;
 
     public static final int network_type = 6;
 
@@ -28,7 +28,7 @@ public class Config {
 
 
     // coordination set 选择时，允许的损失率
-    public static final double [] loseRate = {0,0,0.01,0.1,0.5,0.7};
+    public static final double [] loseRate = {0,0,0.01,0.1,0.5,0.7,0.9};
 
     // 系统 agent 探索率
     public static final double exploreRate = 1;
@@ -39,7 +39,7 @@ public class Config {
 //                {0.000009, 0.000009, 0.000009, 0.000009, 0.000009, 0.000009}, // random
             {0.004,0.004,0.004,0.004,0.004,0.004},  // random
 //                {0.004, 0.004, 0.004, 0.004, 0.0035, 0.0009}, // small world
-            {0.004, 0.004, 0.004, 0.004, 0.004, 0.004}, // small world
+            {0.004, 0.004, 0.004, 0.004, 0.004, 0.004,0.004}, // small world
             {0.004, 0.004, 0.004, 0.004, 0.004, 0.004}  // scale free
     };
 
@@ -51,7 +51,7 @@ public class Config {
 //                {0.000009, 0.000009, 0.000009, 0.000009, 0.000009, 0.000009}, // random
                 {0.004,0.004,0.004,0.004,0.004,0.004},  // random
 //                {0.004, 0.004, 0.004, 0.004, 0.0035, 0.0009}, // small world
-                {0.004, 0.004, 0.004, 0.004, 0.004, 0.004}, // small world
+                {0.004, 0.004, 0.004, 0.004, 0.004, 0.004,0.004}, // small world
                 {0.004, 0.004, 0.004, 0.004, 0.004, 0.004}  // scale free
         };
     }

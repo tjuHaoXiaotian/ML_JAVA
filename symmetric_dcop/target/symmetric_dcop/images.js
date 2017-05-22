@@ -3,7 +3,7 @@
  */
 
 var Config = {
-    contrast_experiment:6
+    contrast_experiment:7
 };
 
 function Obj(url,type){
@@ -25,6 +25,19 @@ function Obj(url,type){
                 }).success(function(data){
                     alert("success!");
                     location.reload();
+                }).error(function(error){
+                    alert("failed!")
+                });
+            });
+
+            $("#stop").on("click",function(e){
+                $.ajax({
+                    url: url+type+"/stopRun",
+                    type: 'get',
+                    dataType: 'json'
+                }).success(function(data){
+                    alert("success!");
+                    //location.reload();
                 }).error(function(error){
                     alert("failed!")
                 });
@@ -58,7 +71,7 @@ function Obj(url,type){
                     .size([width,height])
                     .linkDistance(200)
 //                    .linkStrength(0.8)
-                    .gravity(0.2)
+                    .gravity(1)
                     .charge(-1000)
                     .start();
 
@@ -374,8 +387,13 @@ function Obj(url,type){
                     svgSide.append("g")
                         .attr("class", "x axis")
                         .attr("transform","translate(" + padding.left + "," + (height - padding.bottom) + ")")
-                        .call(xAxis);
-
+                        .call(xAxis)
+                        .append("text")
+                        .attr("transform", "translate(" + (width-padding.right-30) + ",0)")
+                        .attr("y", 6)
+                        .attr("dy", ".71em")
+                        .style("text-anchor", "end")
+                        .text("收敛轮数");
                     svgSide.append("g")
                         .attr("class", "y axis")
                         .attr("transform","translate(" + padding.left + "," + padding.top + ")")
@@ -439,7 +457,13 @@ function Obj(url,type){
                     svgSide.append("g")
                         .attr("class", "x axis")
                         .attr("transform","translate(" + padding.left + "," + (height - padding.bottom) + ")")
-                        .call(xAxis);
+                        .call(xAxis)
+                        .append("text")
+                        .attr("transform", "translate(" + (width-padding.right-20) + ",0)")
+                        .attr("y", 6)
+                        .attr("dy", ".71em")
+                        .style("text-anchor", "end")
+                        .text("diff loss rate");
 
                     svgSide.append("g")
                         .attr("class", "y axis")

@@ -70,6 +70,15 @@ public class GraphicController {
         return result;
     }
 
+    @RequestMapping(value = "/{type}/stopRun",produces = {"application/json;charset=utf8"})
+    public @ResponseBody
+    Map setStop(@PathVariable("type") int type){
+        Map<String,Boolean> result = new HashMap<>();
+        GlobalCache.setConverge(type,true);
+        result.put("status", true);
+        return result;
+    }
+
     @RequestMapping(value = "/{type}/avgPayoffs",produces = {"application/json;charset=utf8"})
     public @ResponseBody
     List<ArrayList<GlobalCache.AvgReward>> getAvgPayoffs(@PathVariable("type") int type){
@@ -139,7 +148,7 @@ public class GraphicController {
 //                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomGraph(25, 0.3,3),3);
                         break;
                     case 4:  // small world
-                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(100, 5, 0.6,4),4);
+                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(1000, 6, 0.6,4),4);
 //                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(35, 4, 0.6,4),4);
                         break;
                     case 5:  // scale free
@@ -165,7 +174,7 @@ public class GraphicController {
         synchronized (GlobalCache.getLock(type)) {
             if (!GlobalCache.isRunningState(type)) {
                 for(int i = 0; i <Config.contrast_experiment;i++){
-//                    if(i == 5){
+                    if(i == 0){
                         System.out.println("new thread for type"+type+":"+i+" restart");
                         final int expId = i;
                         Thread thread = new Thread(new Runnable() {
@@ -200,7 +209,7 @@ public class GraphicController {
                         });
                         thread.start();
                     }
-//                }
+                }
 
 
                 GlobalCache.setRunningState(type,true);

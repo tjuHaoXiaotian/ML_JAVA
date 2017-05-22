@@ -157,6 +157,12 @@ body{
     stroke: greenyellow;
     stroke-width: 1px;
 }
+
+.line-6 {
+    fill: none;
+    stroke: black;
+    stroke-width: 1px;
+}
 /* 图表：平均reward曲线, end ===========*/
 
 
@@ -214,6 +220,11 @@ rect{
     background-color: greenyellow;
 }
 
+.label div.exp-6{
+    background-color: black;
+    color:white;
+}
+
 
 /* 图表label说明, end ===========*/
 
@@ -240,6 +251,10 @@ rect{
 
 .item4 rect.rect-5{
     fill: greenyellow;
+}
+
+.item4 rect.rect-6{
+    fill: black;
 }
 /* 图表柱形图, end ===========*/
 

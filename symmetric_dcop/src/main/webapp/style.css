@@ -157,6 +157,12 @@ body{
     stroke: greenyellow;
     stroke-width: 1px;
 }
+
+.line-6 {
+    fill: none;
+    stroke: black;
+    stroke-width: 1px;
+}
 /* 图表：平均reward曲线, end ===========*/
 
 
@@ -168,39 +174,48 @@ body{
     left: 63px;
 }
 
-.label div.exp{
+.label-line{
+    position: absolute;
+    bottom:30px;
+    right: 60px;
+}
+
+.label-line div.exp,.label div.exp{
     width:200px;
     height:25px;
     font-size: 15px;
-    opacity: 0.5;
+    opacity: 0.7;
 }
 
 rect{
     opacity: 0.5;
 }
 
-.label div.exp-0{
+.label-line div.exp-0,.label div.exp-0{
     background-color: purple;
 }
 
-.label div.exp-1{
+.label-line div.exp-1,.label div.exp-1{
     background-color: steelblue;
 }
-.label div.exp-2{
+.label-line div.exp-2,.label div.exp-2{
     background-color: green;
 }
-.label div.exp-3{
+.label-line div.exp-3,.label div.exp-3{
     background-color: red;
 }
-.label div.exp-4{
+.label-line div.exp-4,.label div.exp-4{
     background-color: orange;
 }
 
-.label div.exp-5{
+.label-line div.exp-5,.label div.exp-5{
     background-color: greenyellow;
 }
 
-
+.label-line div.exp-6,.label div.exp-6{
+    background-color: black;
+    color:white;
+}
 /* 图表label说明, end ===========*/
 
 /* 图表柱形图, start ===========*/
@@ -226,6 +241,9 @@ rect{
 
 .item4 rect.rect-5{
     fill: greenyellow;
+}
+.item4 rect.rect-6{
+    fill: black;
 }
 /* 图表柱形图, end ===========*/
 

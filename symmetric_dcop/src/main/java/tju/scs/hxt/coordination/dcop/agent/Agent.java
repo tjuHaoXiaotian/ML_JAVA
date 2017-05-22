@@ -393,7 +393,7 @@ public class Agent extends Node{
         }
         if(found){
             coordinationSet = markedCoordinationSet;
-            System.out.println("resize the coordination set!" + defaultCoordinationSet.size() + " ——> " + coordinationSet.size());
+//            System.out.println("resize the coordination set!" + defaultCoordinationSet.size() + " ——> " + coordinationSet.size());
         }else{
             coordinationSet = defaultCoordinationSet;
 //            System.out.println("use the default coordination set!" + defaultCoordinationSet.size() + " == " + coordinationSet.size());

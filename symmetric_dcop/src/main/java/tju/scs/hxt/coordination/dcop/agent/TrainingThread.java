@@ -71,8 +71,10 @@ public class TrainingThread extends Thread {
         System.out.println("round: " + round + ",explore rate: "+getAvgExploreRate());
         Analyze.incRoundTimes(type,expId,round);
 
+//        int [] n = new int[]{50,50,70,90,100,100,180};
+        int [] n = new int[]{50,50,50,50,50,100,180};
         if(round % 30 == 0){
-            if(round % 100 == 0){
+            if(round % n[expId] == 0){
                 Config.deltaExploreRate[type][expId] = Config.deltaExploreRate[type][expId] * 2;
             }
             avgPayoffs.add(new GlobalCache.AvgReward(round, getAvgReward()));
