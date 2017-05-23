@@ -148,7 +148,7 @@ public class GraphicController {
 //                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomGraph(25, 0.3,3),3);
                         break;
                     case 4:  // small world
-                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(100, 6, 0.6,4),4);
+                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(100, 5, 0.6,4),4);
 //                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(35, 4, 0.6,4),4);
                         break;
                     case 5:  // scale free
@@ -174,7 +174,7 @@ public class GraphicController {
         synchronized (GlobalCache.getLock(type)) {
             if (!GlobalCache.isRunningState(type)) {
                 for(int i = 0; i <Config.contrast_experiment;i++){
-//                    if(i == 0){
+//                    if(i == 3){
                         System.out.println("new thread for type"+type+":"+i+" restart");
                         final int expId = i;
                         Thread thread = new Thread(new Runnable() {
@@ -193,7 +193,7 @@ public class GraphicController {
                                 long startTime = System.currentTimeMillis();
 
                                 // 开始轮训线程：以判断整个agent网络是否收敛
-                                Thread stopThread = new StopThread(type,expId);
+                                Thread stopThread = new StopThread(type,expId,trainingThread);
                                 stopThread.start();
 
                                 try {

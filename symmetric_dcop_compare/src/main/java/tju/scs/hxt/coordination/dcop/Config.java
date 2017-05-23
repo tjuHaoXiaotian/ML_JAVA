@@ -33,8 +33,8 @@ public class Config {
     // 系统 agent 探索率
     public static final double exploreRate = 1;
     public static double [][] deltaExploreRate = {
-            {0.009, 0.003, 0.035, 0.004}, // grid
-            {0.009, 0.003, 0.035, 0.004}, // regular
+            {0.009, 0.005, 0.035, 0.004}, // grid
+            {0.009, 0.002, 0.035, 0.004}, // regular
             {0.004, 0.004, 0.004, 0.004}, // random regular
 //                {0.000009, 0.000009, 0.000009, 0.000009, 0.000009, 0.000009}, // random
             {0.16, 0.03, 0.035, 0.004},  // random
@@ -43,10 +43,13 @@ public class Config {
             {0.009, 0.0009, 0.035, 0.004}  // scale free
     };
 
+    // 收敛后继续运行的次数
+    public static final int [] rounds_after_converge = new int[]{400,400,100,100};
+
     public static void resetDeltaExploreRate(){
         deltaExploreRate = new double[][]{
-                {0.009, 0.003, 0.035, 0.004}, // grid
-                {0.009, 0.003, 0.035, 0.004}, // regular
+                {0.009, 0.005, 0.035, 0.004}, // grid
+                {0.009, 0.002, 0.035, 0.004}, // regular
                 {0.004, 0.004, 0.004, 0.004}, // random regular
 //                {0.000009, 0.000009, 0.000009, 0.000009, 0.000009, 0.000009}, // random
                 {0.16, 0.03, 0.035, 0.004},  // random
@@ -63,6 +66,8 @@ public class Config {
     public static final double deltaLearningRate = 0.0005;
 
     public static final double discountParameter = 0.9;
+
+
 
     // 系统 reward 设定
     public static final double [][] rewards;

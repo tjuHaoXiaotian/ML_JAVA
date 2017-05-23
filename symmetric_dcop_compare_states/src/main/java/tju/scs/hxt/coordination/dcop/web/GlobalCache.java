@@ -114,14 +114,14 @@ public class GlobalCache {
 
                     for(int expId = 1; expId < Config.contrast_experiment;expId++){
                         // 添加对比试验
-                        contrast_experiments.add(expId, tju.scs.hxt.coordination.dcop.network.Network.deepCopy(parameter));
-//                        if(expId == 1){
-//                            contrast_experiments.add(expId, tju.scs.hxt.coordination.dcop.network.Network.generateScaleFreeGraph(100, 1,5));
-//                        }else if(expId == 2){
-//                            contrast_experiments.add(expId, tju.scs.hxt.coordination.dcop.network.Network.generateScaleFreeGraph(200, 1,5));
-//                        }else if(expId == 3){
-//                            contrast_experiments.add(expId, tju.scs.hxt.coordination.dcop.network.Network.generateScaleFreeGraph(300, 1,5));
-//                        }
+//                        contrast_experiments.add(expId, tju.scs.hxt.coordination.dcop.network.Network.deepCopy(parameter));
+                        if(expId == 1){
+                            contrast_experiments.add(expId, tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(200, 5, 0.6,4));
+                        }else if(expId == 2){
+                            contrast_experiments.add(expId, tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(500, 5, 0.6,4));
+                        }else if(expId == 3){
+                            contrast_experiments.add(expId, tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(1000, 5, 0.6,4));
+                        }
                     }
 
                     // 生成网络拓扑图，for 界面展示

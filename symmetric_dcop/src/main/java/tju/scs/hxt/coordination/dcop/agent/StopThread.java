@@ -1,5 +1,6 @@
 package tju.scs.hxt.coordination.dcop.agent;
 
+import tju.scs.hxt.coordination.dcop.Config;
 import tju.scs.hxt.coordination.dcop.web.GlobalCache;
 
 import java.util.HashMap;
@@ -13,10 +14,13 @@ public class StopThread extends Thread{
 
     private int expId;
 
-    public StopThread(int type,int expId) {
+    private TrainingThread trainingThread;
+
+    public StopThread(int type,int expId,TrainingThread trainingThread) {
         super();
         this.type = type;
         this.expId = expId;
+        this.trainingThread = trainingThread;
     }
 
     // 目前所有 agent 的最有action统计信息
@@ -28,7 +32,10 @@ public class StopThread extends Thread{
      * 判断agent是否收敛：选择统一action的agent数量 > 98%
      * @return
      */
+    private boolean stopMark = false;
+    private int stopRound;
     private boolean isConverge(){
+        if(!stopMark){
         boolean part1,part2;
 
         // 1：选择了同一个action
@@ -47,11 +54,29 @@ public class StopThread extends Thread{
         }else{
             part1 = false;
         }
+            if(!part1) {
+                System.out.println("agents 没有选择到同一个action");
+            }
 
-        // 2：平均收益是否逼近 1
-        part2 = getAvgReward() > 0.98;
+            // 2：平均收益是否逼近 1
+            part2 = getAvgReward() > 0.98;
 
-        return part1 && part2;
+            if(!part2){
+                System.out.println("agents 平均收益没有 == 1");
+            }
+
+            if(part1 && part2){
+                stopMark = true;
+                stopRound = trainingThread.getCurrentRound();
+            }
+            return false;
+        }else{
+            if(trainingThread.getCurrentRound() - stopRound > Config.rounds_after_converge[expId]){
+                return true;
+            }else{
+                return false;
+            }
+        }
     }
 
     @Override

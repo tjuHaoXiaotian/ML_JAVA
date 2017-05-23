@@ -3,7 +3,7 @@
  */
 
 var Config = {
-    contrast_experiment:2
+    contrast_experiment:4
 };
 
 function Obj(url,type){
