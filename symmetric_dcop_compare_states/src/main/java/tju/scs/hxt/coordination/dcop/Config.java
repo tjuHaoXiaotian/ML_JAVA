@@ -8,7 +8,7 @@ import java.util.Map;
  * Created by haoxiaotian on 2017/3/13 23:59.
  */
 public class Config {
-    public static final int contrast_experiment = 4;
+    public static final int contrast_experiment = 2;
 
     public static final int network_type = 6;
 
@@ -16,7 +16,7 @@ public class Config {
     public static final boolean printLog = false;
 
     // 系统 agent 各个状态下： action 个数
-    public static final int actionNum = 3;
+    public static final int actionNum = 10;
 
     // dcop 中，信息发送是否继续参数
     public static final double messageDiffer = 0.00001;//TODO:待调整
