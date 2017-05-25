@@ -148,7 +148,7 @@ public class GraphicController {
 //                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomGraph(25, 0.3,3),3);
                         break;
                     case 4:  // small world
-                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(100, 5, 0.6,4),4);
+                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(1000, 5, 0.6,4),4);
 //                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(35, 4, 0.6,4),4);
                         break;
                     case 5:  // scale free
@@ -165,7 +165,7 @@ public class GraphicController {
 
 //        runAgents(type);
 
-        runAgentsSingleThread(type);
+//        runAgentsSingleThread(type);
 
         return GlobalCache.getNetworks(type);
     }
