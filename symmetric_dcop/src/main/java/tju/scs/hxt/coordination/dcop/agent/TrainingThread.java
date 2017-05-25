@@ -24,6 +24,10 @@ public class TrainingThread extends Thread {
 
     private int round = 0;
 
+    public int getCurrentRound(){
+        return round;
+    }
+
     public TrainingThread(int type,int expId) {
         super();
         this.type = type;

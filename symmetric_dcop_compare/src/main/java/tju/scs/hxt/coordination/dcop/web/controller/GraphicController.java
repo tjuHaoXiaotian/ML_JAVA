@@ -71,6 +71,16 @@ public class GraphicController {
         return result;
     }
 
+
+    @RequestMapping(value = "/{type}/stopRun",produces = {"application/json;charset=utf8"})
+    public @ResponseBody
+    Map setStop(@PathVariable("type") int type){
+        Map<String,Boolean> result = new HashMap<>();
+        GlobalCache.setConverge(type,true);
+        result.put("status", true);
+        return result;
+    }
+
     @RequestMapping(value = "/{type}/avgPayoffs",produces = {"application/json;charset=utf8"})
     public @ResponseBody
     List<ArrayList<GlobalCache.AvgReward>> getAvgPayoffs(@PathVariable("type") int type){
@@ -186,7 +196,7 @@ public class GraphicController {
                                 long startTime = System.currentTimeMillis();
 
                                 // 开始轮训线程：以判断整个agent网络是否收敛
-                                Thread stopThread = new StopThread(type,expId);
+                                Thread stopThread = new StopThread(type,expId,trainingThread);
                                 stopThread.start();
 
                                 try {

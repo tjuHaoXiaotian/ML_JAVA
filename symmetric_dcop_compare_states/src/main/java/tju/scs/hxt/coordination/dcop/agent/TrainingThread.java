@@ -24,6 +24,10 @@ public class TrainingThread extends Thread {
 
     private int round = 0;
 
+    public int getCurrentRound(){
+        return round;
+    }
+
     public TrainingThread(int type,int expId) {
         super();
         this.type = type;
@@ -72,8 +76,8 @@ public class TrainingThread extends Thread {
         Analyze.incRoundTimes(type,expId,round);
 
 //        int [] n = new int[]{50,50,70,90,100,100,180};
-        int [] n = new int[]{120,120};
-        if(round % 20 == 0){
+        int [] n = new int[]{100,100,120,130};
+        if(round % 40 == 0){
             if(round % n[expId] == 0){
                 Config.deltaExploreRate[type][expId] = Config.deltaExploreRate[type][expId] * 2;
             }
@@ -126,7 +130,7 @@ public class TrainingThread extends Thread {
             for(Agent agent:GlobalCache.getAgents(type,expId)){
                 // 向 coordination set 中的每一个 agent 发送信息
                 for(Agent neighbor:agent.getCoordinationSet()){
-                    if(expId == 0){
+                    if(expId == -1){
                         if(Math.random() < 0.1){
                             differEnough = agent.sendMessageTo(neighbor,expId);
                         }else{

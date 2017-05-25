@@ -71,8 +71,8 @@ public class TrainingThread extends Thread {
         System.out.println(type+":"+expId+" round: " + round + ",explore rate: "+getAvgExploreRate());
         Analyze.incRoundTimes(type,expId,round);
 
-        int num = ((expId == 0||expId == 1)?1:5);
-        int num2 = ((expId == 0||expId == 1)?40:20);
+        int num = ((expId == 0||expId == 1)?1:5);  // 记录曲线打点
+        int num2 = ((expId == 0||expId == 1)?20:20);  // delta 相关
         if(round % num == 0){
             if(round % num2 == 0){
                 Config.deltaExploreRate[type][expId] = Config.deltaExploreRate[type][expId] * 2;
@@ -84,6 +84,10 @@ public class TrainingThread extends Thread {
 
             cache.add(new GlobalCache.AvgReward(round, getAvgReward()));
         }
+    }
+
+    public int getCurrentRound(){
+        return round;
     }
 
     private void initConfiguration(){

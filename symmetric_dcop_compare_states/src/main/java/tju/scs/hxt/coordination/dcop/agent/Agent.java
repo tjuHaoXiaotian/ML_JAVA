@@ -352,9 +352,9 @@ public class Agent extends Node{
         currentPayoff = reward;
 
 //        if(expId != 0){
-//            // 6：TODO 更新 Coordination Set
-//            selectCoordinationSet(expId);
-////            partner.selectCoordinationSet(expId);
+            // 6：TODO 更新 Coordination Set
+            selectCoordinationSet(expId);
+//            partner.selectCoordinationSet(expId);
 //        }
     }
 
