@@ -1,4 +1,4 @@
-package tju.scs.hxt.coordination.dcop.agent;
+package tju.scs.hxt.coordination.dcop.agent.max_plus;
 
 import java.util.*;
 
@@ -6,13 +6,13 @@ import java.util.*;
  * Created by haoxiaotian on 2017/5/12 12:25.
  */
 public class Message {
-    private Agent fromAgent;
+    private MaxPlusAgent fromAgent;
 
-    private Agent toAgent;
+    private MaxPlusAgent toAgent;
 
     private double [][] qFromTO;
 
-    public Message(Agent fromAgent,Agent toAgent,double [][] qFromTO){
+    public Message(MaxPlusAgent fromAgent,MaxPlusAgent toAgent,double [][] qFromTO){
         this.fromAgent = fromAgent;
         this.toAgent = toAgent;
         this.qFromTO = copyOf(qFromTO);

@@ -1,7 +1,5 @@
 package tju.scs.hxt.coordination.dcop;
 
-import tju.scs.hxt.coordination.dcop.agent.Agent;
-
 import java.util.HashMap;
 import java.util.Map;
 

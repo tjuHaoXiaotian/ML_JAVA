@@ -1,4 +1,4 @@
-package tju.scs.hxt.coordination.dcop.agent;
+package tju.scs.hxt.coordination.dcop.agent.max_plus;
 
 import java.util.Arrays;
 

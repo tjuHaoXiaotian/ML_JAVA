@@ -1,14 +1,11 @@
-package tju.scs.hxt.coordination.dcop.agent;
+package tju.scs.hxt.coordination.dcop.agent.max_plus;
 
 import tju.scs.hxt.coordination.dcop.Analyze;
 import tju.scs.hxt.coordination.dcop.Config;
-import tju.scs.hxt.coordination.dcop.network.Node;
+import tju.scs.hxt.coordination.dcop.agent.Agent;
 import tju.scs.hxt.coordination.dcop.web.GlobalCache;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -23,6 +20,10 @@ public class TrainingThread extends Thread {
     private CountDownLatch endGate;
 
     private int round = 0;
+
+    public int getCurrentRound(){
+        return round;
+    }
 
     public TrainingThread(int type,int expId) {
         super();

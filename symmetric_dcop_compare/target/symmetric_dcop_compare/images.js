@@ -30,6 +30,19 @@ function Obj(url,type){
                 });
             });
 
+            $("#stop").on("click",function(e){
+                $.ajax({
+                    url: url+type+"/stopRun",
+                    type: 'get',
+                    dataType: 'json'
+                }).success(function(data){
+                    alert("success!");
+                    //location.reload();
+                }).error(function(error){
+                    alert("failed!")
+                });
+            });
+
             var width = 950;  //画布的宽度
             var height = 600;   //画布的高度
             //画布周边的空白

@@ -2,7 +2,6 @@ package tju.scs.hxt.coordination.dcop.network;
 
 import tju.scs.hxt.coordination.dcop.agent.Agent;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

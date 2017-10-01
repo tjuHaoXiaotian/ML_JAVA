@@ -8,9 +8,7 @@ import tju.scs.hxt.coordination.dcop.network.Node;
 import tju.scs.hxt.coordination.dcop.web.entity.Network;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by haoxiaotian on 2017/3/18 23:18.
@@ -114,7 +112,7 @@ public class GlobalCache {
 
                     for(int expId = 1; expId < Config.contrast_experiment;expId++){
                         // 添加对比试验
-                        contrast_experiments.add(expId, tju.scs.hxt.coordination.dcop.network.Network.deepCopy(parameter));
+                        contrast_experiments.add(expId, tju.scs.hxt.coordination.dcop.network.Network.deepCopy(expId,parameter));
                     }
 
                     // 生成网络拓扑图，for 界面展示

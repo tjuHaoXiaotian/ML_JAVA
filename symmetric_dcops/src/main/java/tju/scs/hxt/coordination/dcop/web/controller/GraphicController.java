@@ -3,13 +3,12 @@ package tju.scs.hxt.coordination.dcop.web.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import tju.scs.hxt.coordination.dcop.Analyze;
 import tju.scs.hxt.coordination.dcop.Config;
 import tju.scs.hxt.coordination.dcop.agent.Agent;
-import tju.scs.hxt.coordination.dcop.agent.StopThread;
-import tju.scs.hxt.coordination.dcop.agent.TrainingThread;
+import tju.scs.hxt.coordination.dcop.agent.max_plus.StopThread;
+import tju.scs.hxt.coordination.dcop.agent.max_plus.TrainingThread;
 import tju.scs.hxt.coordination.dcop.web.GlobalCache;
 import tju.scs.hxt.coordination.dcop.web.entity.Network;
 
@@ -132,31 +131,31 @@ public class GraphicController {
             if(GlobalCache.getAgents(type) == null){
                 switch (type){
                     case 0:  // 网格结构
-                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateGridNetworkAsList(10, 10,0),0);
+                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateGridNetworkAsList(0,10, 10),0);
 //                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateGridNetworkAsList(2, 2,0),0);
                         break;
                     case 1:  // regular
-                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRegularGraph(100, 5,1),1);
+                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRegularGraph(0,100, 5),1);
 //                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRegularGraph(10, 5,1),1);
                         break;
                     case 2:  // random regular
-                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomRegularGraph(100, 5,2),2);
+                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomRegularGraph(0,100, 5),2);
 //                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomRegularGraph(100, 5,2),2);
                         break;
                     case 3:  // random
-                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomGraph(100, 0.08,3),3);
+                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomGraph(0,100, 0.03),3);
 //                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateRandomGraph(25, 0.3,3),3);
                         break;
                     case 4:  // small world
-                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(1000, 6, 0.6,4),4);
+                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(0,100, 5, 0.6),4);
 //                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(35, 4, 0.6,4),4);
                         break;
                     case 5:  // scale free
-                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateScaleFreeGraph(100, 1,5),5);
+                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateScaleFreeGraph(0,100, 1),5);
 //                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateScaleFreeGraph(35, 1,5),5);
                         break;
                     default: // small world
-                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(100, 3, 0.6,4),4);
+                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(0,100, 3, 0.6),4);
 //                        GlobalCache.createGlobalCache(tju.scs.hxt.coordination.dcop.network.Network.generateSmallWorldGraph(100, 3, 0.6,4),4);
                         break;
                 }
@@ -174,7 +173,7 @@ public class GraphicController {
         synchronized (GlobalCache.getLock(type)) {
             if (!GlobalCache.isRunningState(type)) {
                 for(int i = 0; i <Config.contrast_experiment;i++){
-                    if(i == 0){
+//                    if(i == 0){
                         System.out.println("new thread for type"+type+":"+i+" restart");
                         final int expId = i;
                         Thread thread = new Thread(new Runnable() {
@@ -193,7 +192,7 @@ public class GraphicController {
                                 long startTime = System.currentTimeMillis();
 
                                 // 开始轮训线程：以判断整个agent网络是否收敛
-                                Thread stopThread = new StopThread(type,expId);
+                                Thread stopThread = new StopThread(type,expId,trainingThread);
                                 stopThread.start();
 
                                 try {
@@ -209,7 +208,7 @@ public class GraphicController {
                         });
                         thread.start();
                     }
-                }
+//                }
 
 
                 GlobalCache.setRunningState(type,true);

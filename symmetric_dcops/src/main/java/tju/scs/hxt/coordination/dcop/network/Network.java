@@ -2,10 +2,10 @@ package tju.scs.hxt.coordination.dcop.network;
 
 import tju.scs.hxt.coordination.dcop.Config;
 import tju.scs.hxt.coordination.dcop.agent.Agent;
+import tju.scs.hxt.coordination.dcop.agent.AgentsFactory;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 
 /**
  * 生成几种常见网络拓扑结构
@@ -28,8 +28,8 @@ public class Network {
      * @param colNum
      * @return
      */
-    public static ArrayList<Agent> generateGridNetworkAsList(int rowNum,int colNum,int type){
-        Agent[][] parameter = generateGridNetwork(rowNum,colNum,type);
+    public static ArrayList<Agent> generateGridNetworkAsList(int expId,int rowNum,int colNum){
+        Agent[][] parameter = generateGridNetwork(expId,rowNum,colNum);
         ArrayList<Agent> agents = new ArrayList<Agent>(rowNum * colNum);
         for(int i = 0; i < parameter.length;i++){
             for(int j = 0; j < parameter[i].length;j++){
@@ -46,13 +46,13 @@ public class Network {
      * @param colNum 网格列数
      * @return
      */
-    public static Agent[][] generateGridNetwork(int rowNum,int colNum,int type){
+    public static Agent[][] generateGridNetwork(int expId,int rowNum,int colNum){
         System.out.println("generateGridNetwork");
 
         Agent[][] nodes = new Agent[rowNum][colNum];
         for(int i = 0; i < rowNum;i++){
             for(int j = 0; j < colNum; j++){
-                nodes[i][j] = new Agent(i * colNum + j, Config.actionNum,Config.exploreRate,Config.learningRate,type);
+                nodes[i][j] = AgentsFactory.getAgent(expId,i * colNum + j, Config.actionNum, Config.exploreRate, Config.learningRate, 0);
             }
         }
 
@@ -103,14 +103,18 @@ public class Network {
      * @param neighborNum 规则网络的相邻邻居数 （此处最好为偶数）
      * @return
      */
-    public static ArrayList<Agent> generateRegularGraph(int nodesNum,int neighborNum,int type){
+    public static ArrayList<Agent> generateRegularGraph(int expId,int nodesNum,int neighborNum){
+       return generateRegularGraph(expId,nodesNum,neighborNum,1);
+    }
+
+    private static ArrayList<Agent> generateRegularGraph(int expId,int nodesNum,int neighborNum,int type){
         System.out.println("generateRegularGraph");
 
         neighborNum = neighborNum / 2;
         // 1：添加节点
         ArrayList<Agent> linkedAgents = new ArrayList<Agent>(nodesNum);
         for(int i = 0; i < nodesNum;i++){
-            linkedAgents.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,type));
+            linkedAgents.add(AgentsFactory.getAgent(expId,i, Config.actionNum, Config.exploreRate, Config.learningRate, type));
         }
 
         Agent me,neighbor;
@@ -135,13 +139,13 @@ public class Network {
      * @param neighborNum 规则网络的相邻邻居数
      * @return
      */
-    public static ArrayList<Agent> generateRandomRegularGraph(int nodesNum,int neighborNum,int type){
+    public static ArrayList<Agent> generateRandomRegularGraph(int expId,int nodesNum,int neighborNum){
         System.out.println("generateRandomRegularGraph");
 
         // 1：生成 nodesNum 个网络节点
         LinkedList<Agent> groupWithoutLink = new LinkedList<Agent>();
         for(int i = 0; i < nodesNum;i++){
-            groupWithoutLink.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,type));
+            groupWithoutLink.add(AgentsFactory.getAgent(expId,i,Config.actionNum,Config.exploreRate,Config.learningRate,2));
         }
 
         ArrayList<Agent> linkedAgents = new ArrayList<Agent>(nodesNum);
@@ -192,13 +196,13 @@ public class Network {
      * @param nodesNum 网络节点数目
      * @return
      */
-    public static ArrayList<Agent> generateRandomGraph(int nodesNum,double p,int type){
+    public static ArrayList<Agent> generateRandomGraph(int expId,int nodesNum,double p){
         System.out.println("generateRandomGraph");
 
         // 1：生成 nodesNum 个网络节点
         LinkedList<Agent> groupWithoutLink = new LinkedList<Agent>();
         for(int i = 0; i < nodesNum;i++){
-            groupWithoutLink.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,type));
+            groupWithoutLink.add(AgentsFactory.getAgent(expId,i,Config.actionNum,Config.exploreRate,Config.learningRate,3));
         }
 
         ArrayList<Agent> linkedAgents = new ArrayList<Agent>(nodesNum);
@@ -240,11 +244,11 @@ public class Network {
      * @param p  以概率 p 重连
      * @return
      */
-    public static ArrayList<Agent> generateSmallWorldGraph(int nodesNum,int neighborNum,double p,int type){
+    private static ArrayList<Agent> generateSmallWorldGraph(int expId,int nodesNum,int neighborNum,double p,int type){
         System.out.println("generateSmallWorldGraph");
 
         // 1: 生成规则网络
-        ArrayList<Agent> nodes = generateRegularGraph(nodesNum,neighborNum,type);
+        ArrayList<Agent> nodes = generateRegularGraph(expId,nodesNum,neighborNum,type);
         neighborNum = neighborNum / 2;
 
         Agent me,neighbor,relinkNeighbor;
@@ -277,6 +281,10 @@ public class Network {
         return nodes;
     }
 
+    public static ArrayList<Agent> generateSmallWorldGraph(int expId,int nodesNum,int neighborNum,double p){
+        return generateSmallWorldGraph(expId,nodesNum,neighborNum,p,4);
+    }
+
 
     /**
      * scale free 网络
@@ -288,17 +296,17 @@ public class Network {
      * @param m 每增加一个节点，向原始网络中添加 m 条边
      * @return
      */
-    public static ArrayList<Agent> generateScaleFreeGraph(int nodesNum,int m,int type){
+    public static ArrayList<Agent> generateScaleFreeGraph(int expId,int nodesNum,int m){
         System.out.println("generateScaleFreeGraph");
         int smallWordAgents = 4;
         if(nodesNum > 20){
             smallWordAgents = 20;
         }
-        ArrayList<Agent> nodes = generateSmallWorldGraph(smallWordAgents,2,0.6,type);  // 以此参数生成 small word 网络
+        ArrayList<Agent> nodes = generateSmallWorldGraph(expId,smallWordAgents,2,0.6,5);  // 以此参数生成 small word 网络
         int gapNum = nodesNum - smallWordAgents,gapLink = m,totalDegree = calTotalDegree(nodes);
         Agent newAgent = null,oldAgent = null;
         while (gapNum > 0){  // 依次添加节点
-            newAgent = new Agent(smallWordAgents++,Config.actionNum,Config.exploreRate,Config.learningRate,type);
+            newAgent = AgentsFactory.getAgent(expId,smallWordAgents++,Config.actionNum,Config.exploreRate,Config.learningRate,5);
             gapLink = m;
             while (gapLink > 0){  // 为每个新节点，添加
                 // 随机选择一个旧的节点
@@ -337,7 +345,7 @@ public class Network {
 
 //        System.out.println(generateRandomRegularGraph(30,4,1));
 //        System.out.println(generateRegularGraph(10,10,1));
-        System.out.println(generateRandomGraph(10, 0.2,1));
+        System.out.println(generateRandomGraph(0,10, 0.2));
 //        System.out.println(generateSmallWorldGraph(10,2, 0.6));
 //        System.out.println(generateScaleFreeGraph(20,1));
 //        System.out.println("123".hashCode());
@@ -345,10 +353,10 @@ public class Network {
 //        System.out.println(s.hashCode());
     }
 
-    public static ArrayList<Agent> deepCopy(ArrayList<Agent> agents){
+    public static ArrayList<Agent> deepCopy(int expId,ArrayList<Agent> agents){
         ArrayList<Agent> copy = new ArrayList<>(agents.size());
         for(int i = 0; i < agents.size();i++){
-            copy.add(new Agent(i,Config.actionNum,Config.exploreRate,Config.learningRate,agents.get(0).getType()));
+            copy.add(AgentsFactory.getAgent(expId,i,Config.actionNum,Config.exploreRate,Config.learningRate,agents.get(0).getType()));
         }
 
         for(int i = 0; i < agents.size();i++){
