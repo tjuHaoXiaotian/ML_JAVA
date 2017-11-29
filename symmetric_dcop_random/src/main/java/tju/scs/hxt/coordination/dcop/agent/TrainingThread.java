@@ -51,6 +51,8 @@ public class TrainingThread extends Thread {
                 avgPayoffs.addAll(cache);
                 GlobalCache.setAvgReward(type,expId,avgPayoffs);
             }
+
+            Config.printRewardTable();
         }finally {
             endGate.countDown();
         }

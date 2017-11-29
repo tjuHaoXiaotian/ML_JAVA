@@ -44,7 +44,7 @@ public class Config {
     };
 
     // 收敛后继续运行的次数
-    public static final int [] rounds_after_converge = new int[]{400,400,400,400,400,400,400};
+    public static final int [] rounds_after_converge = new int[]{80,80,80,80,80,80,80};
 
     public static void resetDeltaExploreRate(){
         deltaExploreRate = new double[][]{

@@ -36,24 +36,29 @@ public class StopThread extends Thread{
     private int stopRound;
     private boolean isConverge(){
         if(!stopMark){
-        boolean part1,part2;
-
-        // 1：选择了同一个action
-        actionSelection.clear();
-        int bestAction,maxCount = 0;
-        if(GlobalCache.getAgents(type,expId) != null) {
-            for (Agent agent : GlobalCache.getAgents(type,expId)) {
-//                bestAction = agent.getMaxUtilityAction().getAction();
-                bestAction = agent.getMaxAction();
-                actionSelection.put(bestAction, actionSelection.get(bestAction) == null ? 1 : actionSelection.get(bestAction) + 1);
-                if (actionSelection.get(bestAction) > maxCount) {
-                    maxCount = actionSelection.get(bestAction);
-                }
+            if(trainingThread.getCurrentRound() > 1400){
+                stopMark = true;
+                stopRound = trainingThread.getCurrentRound();
+                return false;
             }
-            part1 = ((double)maxCount) / GlobalCache.getAgents(type,expId).size() > 0.98;
-        }else{
-            part1 = false;
-        }
+            boolean part1,part2;
+
+            // 1：选择了同一个action
+            actionSelection.clear();
+            int bestAction,maxCount = 0;
+            if(GlobalCache.getAgents(type,expId) != null) {
+                for (Agent agent : GlobalCache.getAgents(type,expId)) {
+    //                bestAction = agent.getMaxUtilityAction().getAction();
+                    bestAction = agent.getMaxAction();
+                    actionSelection.put(bestAction, actionSelection.get(bestAction) == null ? 1 : actionSelection.get(bestAction) + 1);
+                    if (actionSelection.get(bestAction) > maxCount) {
+                        maxCount = actionSelection.get(bestAction);
+                    }
+                }
+                part1 = ((double)maxCount) / GlobalCache.getAgents(type,expId).size() > 0.98;
+            }else{
+                part1 = false;
+            }
             if(!part1) {
                 System.out.println("agents 没有选择到同一个action");
             }

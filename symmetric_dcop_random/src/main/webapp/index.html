@@ -6,5 +6,625 @@
 </head>
 <body>
 <h1>select coordination set with random !</h1>
+
+<script>
+
+    var json = [
+
+        [
+            {
+                "round": 30,
+                "reward": -0.78
+            },
+            {
+                "round": 60,
+                "reward": -0.78
+            },
+            {
+                "round": 90,
+                "reward": -0.5
+            },
+            {
+                "round": 120,
+                "reward": -0.46
+            },
+            {
+                "round": 150,
+                "reward": -0.2
+            },
+            {
+                "round": 180,
+                "reward": 0.34
+            },
+            {
+                "round": 210,
+                "reward": 1.0
+            },
+            {
+                "round": 240,
+                "reward": 1.0
+            },
+            {
+                "round": 270,
+                "reward": 1.0
+            },
+            {
+                "round": 300,
+                "reward": 1.0
+            },
+            {
+                "round": 330,
+                "reward": 1.0
+            },
+            {
+                "round": 360,
+                "reward": 1.0
+            },
+            {
+                "round": 390,
+                "reward": 1.0
+            }
+        ],
+        [
+            {
+                "round": 30,
+                "reward": -0.88
+            },
+            {
+                "round": 60,
+                "reward": -0.72
+            },
+            {
+                "round": 90,
+                "reward": -0.58
+            },
+            {
+                "round": 120,
+                "reward": -0.46
+            },
+            {
+                "round": 150,
+                "reward": -0.02
+            },
+            {
+                "round": 180,
+                "reward": 0.44
+            },
+            {
+                "round": 210,
+                "reward": 1.0
+            },
+            {
+                "round": 240,
+                "reward": 1.0
+            },
+            {
+                "round": 270,
+                "reward": 1.0
+            },
+            {
+                "round": 300,
+                "reward": 1.0
+            },
+            {
+                "round": 330,
+                "reward": 1.0
+            },
+            {
+                "round": 360,
+                "reward": 1.0
+            },
+            {
+                "round": 390,
+                "reward": 1.0
+            },
+            {
+                "round": 391,
+                "reward": 1.0
+            },
+            {
+                "round": 392,
+                "reward": 1.0
+            },
+            {
+                "round": 393,
+                "reward": 1.0
+            },
+            {
+                "round": 394,
+                "reward": 1.0
+            },
+            {
+                "round": 395,
+                "reward": 1.0
+            },
+            {
+                "round": 396,
+                "reward": 1.0
+            },
+            {
+                "round": 397,
+                "reward": 1.0
+            },
+            {
+                "round": 398,
+                "reward": 1.0
+            },
+            {
+                "round": 399,
+                "reward": 1.0
+            },
+            {
+                "round": 400,
+                "reward": 1.0
+            },
+            {
+                "round": 401,
+                "reward": 1.0
+            },
+            {
+                "round": 402,
+                "reward": 1.0
+            },
+            {
+                "round": 403,
+                "reward": 1.0
+            },
+            {
+                "round": 404,
+                "reward": 1.0
+            },
+            {
+                "round": 405,
+                "reward": 1.0
+            },
+            {
+                "round": 406,
+                "reward": 1.0
+            },
+            {
+                "round": 407,
+                "reward": 1.0
+            }
+        ],
+        [
+            {
+                "round": 30,
+                "reward": -0.84
+            },
+            {
+                "round": 60,
+                "reward": -0.74
+            },
+            {
+                "round": 90,
+                "reward": -0.74
+            },
+            {
+                "round": 120,
+                "reward": -0.56
+            },
+            {
+                "round": 150,
+                "reward": -0.02
+            },
+            {
+                "round": 180,
+                "reward": 0.38
+            },
+            {
+                "round": 210,
+                "reward": 1.0
+            },
+            {
+                "round": 240,
+                "reward": 1.0
+            },
+            {
+                "round": 270,
+                "reward": 1.0
+            },
+            {
+                "round": 300,
+                "reward": 1.0
+            },
+            {
+                "round": 330,
+                "reward": 1.0
+            },
+            {
+                "round": 360,
+                "reward": 1.0
+            },
+            {
+                "round": 361,
+                "reward": 1.0
+            },
+            {
+                "round": 362,
+                "reward": 1.0
+            },
+            {
+                "round": 363,
+                "reward": 1.0
+            },
+            {
+                "round": 364,
+                "reward": 1.0
+            },
+            {
+                "round": 365,
+                "reward": 1.0
+            },
+            {
+                "round": 366,
+                "reward": 1.0
+            },
+            {
+                "round": 367,
+                "reward": 1.0
+            }
+        ],
+        [
+            {
+                "round": 30,
+                "reward": -0.82
+            },
+            {
+                "round": 60,
+                "reward": -0.78
+            },
+            {
+                "round": 90,
+                "reward": -0.76
+            },
+            {
+                "round": 120,
+                "reward": -0.52
+            },
+            {
+                "round": 150,
+                "reward": -0.34
+            },
+            {
+                "round": 180,
+                "reward": 0.34
+            },
+            {
+                "round": 210,
+                "reward": 0.9
+            },
+            {
+                "round": 240,
+                "reward": 0.9
+            },
+            {
+                "round": 270,
+                "reward": 1.0
+            },
+            {
+                "round": 300,
+                "reward": 1.0
+            },
+            {
+                "round": 330,
+                "reward": 1.0
+            },
+            {
+                "round": 360,
+                "reward": 1.0
+            },
+            {
+                "round": 390,
+                "reward": 1.0
+            },
+            {
+                "round": 420,
+                "reward": 1.0
+            },
+            {
+                "round": 450,
+                "reward": 1.0
+            },
+            {
+                "round": 480,
+                "reward": 1.0
+            },
+            {
+                "round": 510,
+                "reward": 1.0
+            },
+            {
+                "round": 540,
+                "reward": 1.0
+            },
+            {
+                "round": 541,
+                "reward": 1.0
+            },
+            {
+                "round": 542,
+                "reward": 1.0
+            },
+            {
+                "round": 543,
+                "reward": 1.0
+            },
+            {
+                "round": 544,
+                "reward": 1.0
+            },
+            {
+                "round": 545,
+                "reward": 1.0
+            },
+            {
+                "round": 546,
+                "reward": 1.0
+            },
+            {
+                "round": 547,
+                "reward": 1.0
+            },
+            {
+                "round": 548,
+                "reward": 1.0
+            },
+            {
+                "round": 549,
+                "reward": 1.0
+            },
+            {
+                "round": 550,
+                "reward": 1.0
+            },
+            {
+                "round": 551,
+                "reward": 1.0
+            },
+            {
+                "round": 552,
+                "reward": 1.0
+            },
+            {
+                "round": 553,
+                "reward": 1.0
+            },
+            {
+                "round": 554,
+                "reward": 1.0
+            },
+            {
+                "round": 555,
+                "reward": 1.0
+            },
+            {
+                "round": 556,
+                "reward": 1.0
+            },
+            {
+                "round": 557,
+                "reward": 1.0
+            },
+            {
+                "round": 558,
+                "reward": 1.0
+            },
+            {
+                "round": 559,
+                "reward": 1.0
+            },
+            {
+                "round": 560,
+                "reward": 1.0
+            }
+        ],
+        [
+            {
+                "round": 30,
+                "reward": -0.8
+            },
+            {
+                "round": 60,
+                "reward": -0.78
+            },
+            {
+                "round": 90,
+                "reward": -0.78
+            },
+            {
+                "round": 120,
+                "reward": -0.66
+            },
+            {
+                "round": 150,
+                "reward": -0.58
+            },
+            {
+                "round": 180,
+                "reward": -0.26
+            },
+            {
+                "round": 210,
+                "reward": -0.02
+            },
+            {
+                "round": 240,
+                "reward": -0.02
+            },
+            {
+                "round": 270,
+                "reward": -0.06
+            },
+            {
+                "round": 300,
+                "reward": 0.12
+            },
+            {
+                "round": 330,
+                "reward": 0.18
+            },
+            {
+                "round": 360,
+                "reward": 0.14
+            },
+            {
+                "round": 390,
+                "reward": 0.6
+            },
+            {
+                "round": 420,
+                "reward": 0.72
+            },
+            {
+                "round": 450,
+                "reward": 0.94
+            },
+            {
+                "round": 480,
+                "reward": 1.0
+            },
+            {
+                "round": 510,
+                "reward": 1.0
+            },
+            {
+                "round": 540,
+                "reward": 1.0
+            },
+            {
+                "round": 570,
+                "reward": 1.0
+            },
+            {
+                "round": 600,
+                "reward": 1.0
+            },
+            {
+                "round": 630,
+                "reward": 1.0
+            },
+            {
+                "round": 660,
+                "reward": 1.0
+            },
+            {
+                "round": 690,
+                "reward": 1.0
+            },
+            {
+                "round": 720,
+                "reward": 1.0
+            },
+            {
+                "round": 750,
+                "reward": 1.0
+            },
+            {
+                "round": 780,
+                "reward": 1.0
+            },
+            {
+                "round": 810,
+                "reward": 1.0
+            },
+            {
+                "round": 840,
+                "reward": 1.0
+            },
+            {
+                "round": 870,
+                "reward": 1.0
+            },
+            {
+                "round": 900,
+                "reward": 1.0
+            },
+            {
+                "round": 930,
+                "reward": 1.0
+            },
+            {
+                "round": 960,
+                "reward": 1.0
+            },
+            {
+                "round": 990,
+                "reward": 1.0
+            },
+            {
+                "round": 1020,
+                "reward": 1.0
+            },
+            {
+                "round": 1050,
+                "reward": 1.0
+            },
+            {
+                "round": 1080,
+                "reward": 1.0
+            },
+            {
+                "round": 1110,
+                "reward": 1.0
+            },
+            {
+                "round": 1140,
+                "reward": 1.0
+            },
+            {
+                "round": 1170,
+                "reward": 1.0
+            },
+            {
+                "round": 1200,
+                "reward": 1.0
+            },
+            {
+                "round": 1230,
+                "reward": 1.0
+            },
+            {
+                "round": 1260,
+                "reward": 1.0
+            },
+            {
+                "round": 1261,
+                "reward": 1.0
+            },
+            {
+                "round": 1262,
+                "reward": 1.0
+            },
+            {
+                "round": 1263,
+                "reward": 1.0
+            },
+            {
+                "round": 1264,
+                "reward": 1.0
+            }
+        ]
+
+    ]
+
+    var i,j,x = [],y = [];
+    for(i = 0;i < json.length;i++){
+        x = [];
+        y = [];
+        for(j = 0;j < json[i].length;j++){
+            x.push(json[i][j]["round"])
+            y.push(json[i][j]["reward"])
+        }
+//        console.log(x);
+        document.writeln("<br>")
+        document.writeln(x);
+//        console.log(y);
+        document.writeln("<br>")
+        document.writeln(y);
+    }
+
+
+</script>
 </body>
 </html>

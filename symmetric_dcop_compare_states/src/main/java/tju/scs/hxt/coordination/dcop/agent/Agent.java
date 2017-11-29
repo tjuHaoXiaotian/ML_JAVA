@@ -44,6 +44,9 @@ public class Agent extends Node{
     @JsonIgnore
     private double exploreRate; // 探索率
 
+    @JsonIgnore
+    private double randomRate = -1; // 探索率
+
     private final int type; // 所属的网络种类
 
     public Agent(int id,int actionNum,double exploreRate,double learningRate,int type) {
@@ -353,10 +356,31 @@ public class Agent extends Node{
 
 //        if(expId != 0){
             // 6：TODO 更新 Coordination Set
-            selectCoordinationSet(expId);
+//            selectCoordinationSet(expId);
+        selectCoordinationSetWithRandom(expId);
 //            partner.selectCoordinationSet(expId);
 //        }
     }
+
+
+    private void updateDeltaWithDecay(int expId){
+        this.randomRate -= Config.deltaRandomRate[type][expId];
+    }
+
+    private void selectCoordinationSetWithRandom(int expId) {
+        if(this.randomRate < 0){  // 还未被初始化
+            this.randomRate = Config.randomRate[type][expId];
+        }
+
+        Set<Agent> result = new HashSet<>();
+        for(Agent agent:defaultCoordinationSet){
+            if(Math.random() < this.randomRate){
+                result.add(agent);
+            }
+        }
+        this.coordinationSet = result;
+    }
+
 
     /**
      * TODO: dynamically select the coordination set (to reduce the messages sent by the algorithm)
@@ -369,7 +393,8 @@ public class Agent extends Node{
         Set<Agent> tempCoordinationSet = new HashSet<Agent>();
         // 2.1：如果 coordination set 可以为空
         if(potentialLossInLockOfCoordination(tempCoordinationSet) < maxLoss){
-            coordinationSet.clear();
+            // coordinationSet.clear();
+            coordinationSet = new HashSet<>();
             return;
         }
 

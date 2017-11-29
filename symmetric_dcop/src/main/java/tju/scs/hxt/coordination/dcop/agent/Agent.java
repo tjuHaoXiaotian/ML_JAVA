@@ -369,7 +369,8 @@ public class Agent extends Node{
         Set<Agent> tempCoordinationSet = new HashSet<Agent>();
         // 2.1：如果 coordination set 可以为空
         if(potentialLossInLockOfCoordination(tempCoordinationSet) < maxLoss){
-            coordinationSet.clear();
+            // coordinationSet.clear();
+            coordinationSet = new HashSet<>();
             return;
         }
 

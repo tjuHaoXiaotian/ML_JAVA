@@ -3,7 +3,7 @@
  */
 
 var Config = {
-    contrast_experiment:2
+    contrast_experiment:4
 };
 
 function Obj(url,type){
@@ -48,7 +48,7 @@ function Obj(url,type){
             //画布周边的空白
             var padding = {left:40, right:30, top:20, bottom:20};
             var delta = 50;
-            var nodes_r = 10;
+            var nodes_r = 3;
             var svg = d3.select(".item1")     //选择文档中的body元素
                 .append("svg")          //添加一个svg元素
                 .attr("width", width)       //设定宽度
@@ -69,10 +69,10 @@ function Obj(url,type){
                     .nodes(root.nodes)
                     .links(root.edges)
                     .size([width,height])
-                    .linkDistance(200)
-//                    .linkStrength(0.8)
-                    .gravity(1)
-                    .charge(-1000)
+                    .linkDistance(20)
+                   .linkStrength(1)
+                    .gravity(0.9)
+                    .charge(-110)
                     .start();
 
                 // 添加连线
@@ -116,7 +116,8 @@ function Obj(url,type){
                     .attr("dy", 8)
                     .text(function(d){
                         //return d.id + ":" + d.centrality;
-                        return d.id;
+                        // return d.id;
+                        return "";
                     });
 
 

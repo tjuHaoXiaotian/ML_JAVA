@@ -2,115 +2,933 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>coordination game</title>
-
-    <link href="style.css" rel="stylesheet" type="text/css">
-
+    <title>Title</title>
 </head>
 <body>
-<div class="nav-top">
+<h1>select coordination set with random !</h1>
+
+<script>
+
+    var json = [
+
+        [
+            {
+                "round": 30,
+                "reward": -0.88
+            },
+            {
+                "round": 60,
+                "reward": -0.74
+            },
+            {
+                "round": 90,
+                "reward": -0.5
+            },
+            {
+                "round": 120,
+                "reward": -0.34
+            },
+            {
+                "round": 150,
+                "reward": -0.28
+            },
+            {
+                "round": 180,
+                "reward": 0.54
+            },
+            {
+                "round": 210,
+                "reward": 1.0
+            },
+            {
+                "round": 240,
+                "reward": 1.0
+            },
+            {
+                "round": 270,
+                "reward": 1.0
+            },
+            {
+                "round": 300,
+                "reward": 1.0
+            },
+            {
+                "round": 301,
+                "reward": 1.0
+            },
+            {
+                "round": 302,
+                "reward": 1.0
+            },
+            {
+                "round": 303,
+                "reward": 1.0
+            },
+            {
+                "round": 304,
+                "reward": 1.0
+            },
+            {
+                "round": 305,
+                "reward": 1.0
+            },
+            {
+                "round": 306,
+                "reward": 1.0
+            },
+            {
+                "round": 307,
+                "reward": 1.0
+            },
+            {
+                "round": 308,
+                "reward": 1.0
+            },
+            {
+                "round": 309,
+                "reward": 1.0
+            },
+            {
+                "round": 310,
+                "reward": 1.0
+            },
+            {
+                "round": 311,
+                "reward": 1.0
+            },
+            {
+                "round": 312,
+                "reward": 1.0
+            },
+            {
+                "round": 313,
+                "reward": 1.0
+            }
+        ],
+        [
+            {
+                "round": 30,
+                "reward": -0.88
+            },
+            {
+                "round": 60,
+                "reward": -0.78
+            },
+            {
+                "round": 90,
+                "reward": -0.46
+            },
+            {
+                "round": 120,
+                "reward": -0.32
+            },
+            {
+                "round": 150,
+                "reward": -0.34
+            },
+            {
+                "round": 180,
+                "reward": 0.48
+            },
+            {
+                "round": 210,
+                "reward": 1.0
+            },
+            {
+                "round": 240,
+                "reward": 1.0
+            },
+            {
+                "round": 270,
+                "reward": 1.0
+            },
+            {
+                "round": 300,
+                "reward": 1.0
+            },
+            {
+                "round": 301,
+                "reward": 1.0
+            },
+            {
+                "round": 302,
+                "reward": 1.0
+            },
+            {
+                "round": 303,
+                "reward": 1.0
+            }
+        ],
+        [
+            {
+                "round": 30,
+                "reward": -0.82
+            },
+            {
+                "round": 60,
+                "reward": -0.72
+            },
+            {
+                "round": 90,
+                "reward": -0.5
+            },
+            {
+                "round": 120,
+                "reward": -0.4
+            },
+            {
+                "round": 150,
+                "reward": -0.28
+            },
+            {
+                "round": 180,
+                "reward": 0.48
+            },
+            {
+                "round": 210,
+                "reward": 1.0
+            },
+            {
+                "round": 240,
+                "reward": 1.0
+            },
+            {
+                "round": 270,
+                "reward": 1.0
+            },
+            {
+                "round": 300,
+                "reward": 1.0
+            },
+            {
+                "round": 301,
+                "reward": 1.0
+            },
+            {
+                "round": 302,
+                "reward": 1.0
+            },
+            {
+                "round": 303,
+                "reward": 1.0
+            },
+            {
+                "round": 304,
+                "reward": 1.0
+            },
+            {
+                "round": 305,
+                "reward": 1.0
+            },
+            {
+                "round": 306,
+                "reward": 1.0
+            },
+            {
+                "round": 307,
+                "reward": 1.0
+            },
+            {
+                "round": 308,
+                "reward": 1.0
+            },
+            {
+                "round": 309,
+                "reward": 1.0
+            },
+            {
+                "round": 310,
+                "reward": 1.0
+            },
+            {
+                "round": 311,
+                "reward": 1.0
+            },
+            {
+                "round": 312,
+                "reward": 1.0
+            },
+            {
+                "round": 313,
+                "reward": 1.0
+            },
+            {
+                "round": 314,
+                "reward": 1.0
+            },
+            {
+                "round": 315,
+                "reward": 1.0
+            }
+        ],
+        [
+            {
+                "round": 30,
+                "reward": -0.84
+            },
+            {
+                "round": 60,
+                "reward": -0.78
+            },
+            {
+                "round": 90,
+                "reward": -0.6
+            },
+            {
+                "round": 120,
+                "reward": -0.44
+            },
+            {
+                "round": 150,
+                "reward": -0.16
+            },
+            {
+                "round": 180,
+                "reward": 0.48
+            },
+            {
+                "round": 210,
+                "reward": 1.0
+            },
+            {
+                "round": 240,
+                "reward": 1.0
+            },
+            {
+                "round": 270,
+                "reward": 1.0
+            },
+            {
+                "round": 300,
+                "reward": 1.0
+            },
+            {
+                "round": 330,
+                "reward": 1.0
+            },
+            {
+                "round": 331,
+                "reward": 1.0
+            },
+            {
+                "round": 332,
+                "reward": 1.0
+            },
+            {
+                "round": 333,
+                "reward": 1.0
+            },
+            {
+                "round": 334,
+                "reward": 1.0
+            },
+            {
+                "round": 335,
+                "reward": 1.0
+            },
+            {
+                "round": 336,
+                "reward": 1.0
+            },
+            {
+                "round": 337,
+                "reward": 1.0
+            },
+            {
+                "round": 338,
+                "reward": 1.0
+            },
+            {
+                "round": 339,
+                "reward": 1.0
+            },
+            {
+                "round": 340,
+                "reward": 1.0
+            },
+            {
+                "round": 341,
+                "reward": 1.0
+            },
+            {
+                "round": 342,
+                "reward": 1.0
+            },
+            {
+                "round": 343,
+                "reward": 1.0
+            },
+            {
+                "round": 344,
+                "reward": 1.0
+            },
+            {
+                "round": 345,
+                "reward": 1.0
+            },
+            {
+                "round": 346,
+                "reward": 1.0
+            },
+            {
+                "round": 347,
+                "reward": 1.0
+            },
+            {
+                "round": 348,
+                "reward": 1.0
+            },
+            {
+                "round": 349,
+                "reward": 1.0
+            },
+            {
+                "round": 350,
+                "reward": 1.0
+            },
+            {
+                "round": 351,
+                "reward": 1.0
+            },
+            {
+                "round": 352,
+                "reward": 1.0
+            },
+            {
+                "round": 353,
+                "reward": 1.0
+            },
+            {
+                "round": 354,
+                "reward": 1.0
+            },
+            {
+                "round": 355,
+                "reward": 1.0
+            },
+            {
+                "round": 356,
+                "reward": 1.0
+            },
+            {
+                "round": 357,
+                "reward": 1.0
+            },
+            {
+                "round": 358,
+                "reward": 1.0
+            }
+        ],
+        [
+            {
+                "round": 30,
+                "reward": -0.78
+            },
+            {
+                "round": 60,
+                "reward": -0.76
+            },
+            {
+                "round": 90,
+                "reward": -0.68
+            },
+            {
+                "round": 120,
+                "reward": -0.28
+            },
+            {
+                "round": 150,
+                "reward": -0.1
+            },
+            {
+                "round": 180,
+                "reward": 0.5
+            },
+            {
+                "round": 210,
+                "reward": 1.0
+            },
+            {
+                "round": 240,
+                "reward": 1.0
+            },
+            {
+                "round": 270,
+                "reward": 1.0
+            },
+            {
+                "round": 300,
+                "reward": 1.0
+            },
+            {
+                "round": 330,
+                "reward": 1.0
+            },
+            {
+                "round": 331,
+                "reward": 1.0
+            },
+            {
+                "round": 332,
+                "reward": 1.0
+            },
+            {
+                "round": 333,
+                "reward": 1.0
+            },
+            {
+                "round": 334,
+                "reward": 1.0
+            },
+            {
+                "round": 335,
+                "reward": 1.0
+            },
+            {
+                "round": 336,
+                "reward": 1.0
+            },
+            {
+                "round": 337,
+                "reward": 1.0
+            },
+            {
+                "round": 338,
+                "reward": 1.0
+            },
+            {
+                "round": 339,
+                "reward": 1.0
+            },
+            {
+                "round": 340,
+                "reward": 1.0
+            },
+            {
+                "round": 341,
+                "reward": 1.0
+            },
+            {
+                "round": 342,
+                "reward": 1.0
+            },
+            {
+                "round": 343,
+                "reward": 1.0
+            }
+        ],
+        [
+            {
+                "round": 30,
+                "reward": -0.76
+            },
+            {
+                "round": 60,
+                "reward": -0.76
+            },
+            {
+                "round": 90,
+                "reward": -0.76
+            },
+            {
+                "round": 120,
+                "reward": -0.46
+            },
+            {
+                "round": 150,
+                "reward": 0.0
+            },
+            {
+                "round": 180,
+                "reward": 0.14
+            },
+            {
+                "round": 210,
+                "reward": 0.4
+            },
+            {
+                "round": 240,
+                "reward": 0.8
+            },
+            {
+                "round": 270,
+                "reward": 1.0
+            },
+            {
+                "round": 300,
+                "reward": 1.0
+            },
+            {
+                "round": 330,
+                "reward": 1.0
+            },
+            {
+                "round": 331,
+                "reward": 1.0
+            },
+            {
+                "round": 332,
+                "reward": 1.0
+            },
+            {
+                "round": 333,
+                "reward": 1.0
+            },
+            {
+                "round": 334,
+                "reward": 1.0
+            },
+            {
+                "round": 335,
+                "reward": 1.0
+            },
+            {
+                "round": 336,
+                "reward": 1.0
+            },
+            {
+                "round": 337,
+                "reward": 1.0
+            },
+            {
+                "round": 338,
+                "reward": 1.0
+            },
+            {
+                "round": 339,
+                "reward": 1.0
+            },
+            {
+                "round": 340,
+                "reward": 1.0
+            },
+            {
+                "round": 341,
+                "reward": 1.0
+            },
+            {
+                "round": 342,
+                "reward": 1.0
+            },
+            {
+                "round": 343,
+                "reward": 1.0
+            },
+            {
+                "round": 344,
+                "reward": 1.0
+            },
+            {
+                "round": 345,
+                "reward": 1.0
+            },
+            {
+                "round": 346,
+                "reward": 1.0
+            },
+            {
+                "round": 347,
+                "reward": 1.0
+            },
+            {
+                "round": 348,
+                "reward": 1.0
+            },
+            {
+                "round": 349,
+                "reward": 1.0
+            },
+            {
+                "round": 350,
+                "reward": 1.0
+            },
+            {
+                "round": 351,
+                "reward": 1.0
+            },
+            {
+                "round": 352,
+                "reward": 1.0
+            },
+            {
+                "round": 353,
+                "reward": 1.0
+            },
+            {
+                "round": 354,
+                "reward": 1.0
+            },
+            {
+                "round": 355,
+                "reward": 1.0
+            },
+            {
+                "round": 356,
+                "reward": 1.0
+            },
+            {
+                "round": 357,
+                "reward": 1.0
+            },
+            {
+                "round": 358,
+                "reward": 1.0
+            }
+        ],
+        [
+            {
+                "round": 30,
+                "reward": -0.74
+            },
+            {
+                "round": 60,
+                "reward": -0.7
+            },
+            {
+                "round": 90,
+                "reward": -0.68
+            },
+            {
+                "round": 120,
+                "reward": -0.68
+            },
+            {
+                "round": 150,
+                "reward": -0.54
+            },
+            {
+                "round": 180,
+                "reward": -0.18
+            },
+            {
+                "round": 210,
+                "reward": 0.52
+            },
+            {
+                "round": 240,
+                "reward": 0.84
+            },
+            {
+                "round": 270,
+                "reward": 0.94
+            },
+            {
+                "round": 300,
+                "reward": 0.9
+            },
+            {
+                "round": 330,
+                "reward": 0.9
+            },
+            {
+                "round": 360,
+                "reward": 0.92
+            },
+            {
+                "round": 390,
+                "reward": 0.9
+            },
+            {
+                "round": 420,
+                "reward": 0.94
+            },
+            {
+                "round": 450,
+                "reward": 0.92
+            },
+            {
+                "round": 480,
+                "reward": 0.92
+            },
+            {
+                "round": 510,
+                "reward": 0.94
+            },
+            {
+                "round": 540,
+                "reward": 0.82
+            },
+            {
+                "round": 570,
+                "reward": 0.92
+            },
+            {
+                "round": 600,
+                "reward": 0.92
+            },
+            {
+                "round": 630,
+                "reward": 0.94
+            },
+            {
+                "round": 660,
+                "reward": 0.9
+            },
+            {
+                "round": 690,
+                "reward": 0.86
+            },
+            {
+                "round": 720,
+                "reward": 0.9
+            },
+            {
+                "round": 750,
+                "reward": 0.94
+            },
+            {
+                "round": 780,
+                "reward": 0.9
+            },
+            {
+                "round": 810,
+                "reward": 0.88
+            },
+            {
+                "round": 840,
+                "reward": 0.9
+            },
+            {
+                "round": 870,
+                "reward": 0.94
+            },
+            {
+                "round": 900,
+                "reward": 0.94
+            },
+            {
+                "round": 930,
+                "reward": 0.9
+            },
+            {
+                "round": 960,
+                "reward": 0.9
+            },
+            {
+                "round": 990,
+                "reward": 0.92
+            },
+            {
+                "round": 1020,
+                "reward": 0.9
+            },
+            {
+                "round": 1050,
+                "reward": 0.9
+            },
+            {
+                "round": 1080,
+                "reward": 0.88
+            },
+            {
+                "round": 1110,
+                "reward": 0.92
+            },
+            {
+                "round": 1140,
+                "reward": 0.92
+            },
+            {
+                "round": 1170,
+                "reward": 0.92
+            },
+            {
+                "round": 1200,
+                "reward": 0.94
+            },
+            {
+                "round": 1230,
+                "reward": 0.94
+            },
+            {
+                "round": 1260,
+                "reward": 0.92
+            },
+            {
+                "round": 1290,
+                "reward": 0.92
+            },
+            {
+                "round": 1320,
+                "reward": 0.9
+            },
+            {
+                "round": 1350,
+                "reward": 0.88
+            },
+            {
+                "round": 1380,
+                "reward": 0.9
+            },
+            {
+                "round": 1410,
+                "reward": 0.98
+            },
+            {
+                "round": 1440,
+                "reward": 0.88
+            },
+            {
+                "round": 1470,
+                "reward": 0.94
+            },
+            {
+                "round": 1500,
+                "reward": 0.9
+            },
+            {
+                "round": 1530,
+                "reward": 0.92
+            },
+            {
+                "round": 1531,
+                "reward": 0.88
+            },
+            {
+                "round": 1532,
+                "reward": 0.9
+            },
+            {
+                "round": 1533,
+                "reward": 0.88
+            },
+            {
+                "round": 1534,
+                "reward": 0.92
+            },
+            {
+                "round": 1535,
+                "reward": 0.86
+            },
+            {
+                "round": 1536,
+                "reward": 0.9
+            },
+            {
+                "round": 1537,
+                "reward": 0.86
+            }
+        ]
+
+    ]
+
+    var i,j,x = [],y = [];
+    for(i = 0;i < json.length;i++){
+        x = [];
+        y = [];
+        for(j = 0;j < json[i].length;j++){
+            x.push(json[i][j]["round"])
+            y.push(json[i][j]["reward"])
+        }
+//        console.log(x);
+        document.writeln("<br>")
+        document.writeln(x);
+//        console.log(y);
+        document.writeln("<br>")
+        document.writeln(y);
+    }
 
 
-    <ul>
-        <li><h3>coordination game [<span class="information">grid</span>]</h3></li>
-        <li><a href="index2.html" target="_blank">regular</a></li>
-        <li><a href="index3.html" target="_blank">random regular</a></li>
-        <li><a href="index4.html" target="_blank">random</a></li>
-        <li><a href="index5.html" target="_blank">small world</a></li>
-        <li><a href="index6.html" target="_blank">scale free</a></li>
-        <li><a id="reset" href="#">reset</a></li>
-    </ul>
-</div>
-<<div class="main">
-    <div class="item item1">
-
-    </div>
-
-    <div class="item item2-0">
-        <div class="label">
-            <div class="exp exp-0">实验0: 不调整CS</div>
-        </div>
-    </div>
-
-    <div class="item item2-1">
-        <div class="label">
-            <div class="exp exp-1">实验1: 调整CS,loss rate 0</div>
-        </div>
-    </div>
-
-    <div class="item item2-2">
-        <div class="label">
-            <div class="exp exp-2">实验2: 调整CS,loss rate 0.01</div>
-        </div>
-    </div>
-
-    <div class="item item2-3">
-        <div class="label">
-            <div class="exp exp-3">实验3: 调整CS,loss rate 0.1</div>
-        </div>
-    </div>
-
-    <div class="item item2-4">
-        <div class="label">
-            <div class="exp exp-4">实验4: 调整CS,loss rate 0.5</div>
-        </div>
-    </div>
-
-    <div class="item item2-5">
-        <div class="label">
-            <div class="exp exp-5">实验5: 调整CS,loss rate 0.7</div>
-        </div>
-    </div>
-
-    <div class="item item3">
-        <div class="label">
-            <div class="exp exp-0">实验0: 不调整CS</div>
-            <div class="exp exp-1">实验1: 调整CS,loss rate 0</div>
-            <div class="exp exp-2">实验2: 调整CS,loss rate 0.01</div>
-            <div class="exp exp-3">实验3: 调整CS,loss rate 0.1</div>
-            <div class="exp exp-4">实验4: 调整CS,loss rate 0.5</div>
-            <div class="exp exp-5">实验5: 调整CS,loss rate 0.7</div>
-        </div>
-
-    </div>
-
-
-    <div class="item item4">
-        <div class="label">
-            <div class="exp exp-0">实验0: 不调整CS</div>
-            <div class="exp exp-1">实验1: 调整CS,loss rate 0</div>
-            <div class="exp exp-2">实验2: 调整CS,loss rate 0.01</div>
-            <div class="exp exp-3">实验3: 调整CS,loss rate 0.1</div>
-            <div class="exp exp-4">实验4: 调整CS,loss rate 0.5</div>
-            <div class="exp exp-5">实验5: 调整CS,loss rate 0.7</div>
-        </div>
-
-    </div>
-</div>
-
-
-<table id="q-table">
-
-</table>
-<script type="text/javascript" src="jquery1.9.0.js"></script>
-<script type="text/javascript" src="d3.v3.min.js"></script>
-<script type="text/javascript" src="images.js"></script>
-<script type="text/javascript">
-//    case 0:  // 网格结构
-//    case 1:  // regular
-//    case 2:  // random regular
-//    case 3:  // random
-//    case 4:  // small world
-//    case 5:  // scale free
-//    default: // small world
-    $(document).ready(function(){
-        var url = "http://localhost:8080/coordination_game/graph/";
-        var type = 0;
-        var obj = new Obj(url,type);
-        obj.init();
-    })
 </script>
-
-
 </body>
 </html>

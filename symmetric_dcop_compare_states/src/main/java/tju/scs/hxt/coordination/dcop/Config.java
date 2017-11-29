@@ -43,8 +43,26 @@ public class Config {
             {0.004, 0.004, 0.004, 0.004, 0.004, 0.004}  // scale free
     };
 
+    public static double [][] randomRate = {
+            {0.5, 0.5, 0.5, 0.5, 0.5, 0.5,0.5}, // grid
+            {0.5, 0.5, 0.5, 0.5, 0.5, 0.5,0.5}, // regular
+            {0.5, 0.5, 0.5, 0.5, 0.5, 0.5,0.5}, // random regular
+            {0.5,0.5,0.5,0.5,0.5,0.5,0.5},  // random
+            {0.6, 0.6, 0.6, 0.6, 0.01, 0.5,0.5}, // small world   4
+            {0.5, 0.5, 0.5, 0.5, 0.5, 0.5,0.5}  // scale free
+    };
+
+    public static double [][] deltaRandomRate = {
+            {0.004, 0.004, 0.004, 0.004, 0.004, 0.004,0.004}, // grid
+            {0.004, 0.004, 0.004, 0.004, 0.004, 0.004,0.004}, // regular
+            {0.004, 0.004, 0.004, 0.004, 0.004, 0.004,0.004}, // random regular
+            {0.004,0.004,0.004,0.004,0.004,0.004,0.004},  // random
+            {0.005,0.002, 0.0004, 0.0002, 0.000004, 0.004, 0.004,0.004}, // small world
+            {0.004, 0.004, 0.004, 0.004, 0.004, 0.004,0.004}  // scale free
+    };
+
     // 收敛后继续运行的次数
-    public static final int [] rounds_after_converge = new int[]{200,160,150,100,200,200,200};
+    public static final int [] rounds_after_converge = new int[]{100,100,100,100,200,200,200};
 
     public static void resetDeltaExploreRate(){
         deltaExploreRate = new double[][]{

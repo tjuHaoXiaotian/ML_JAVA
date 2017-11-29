@@ -355,17 +355,25 @@ public class Agent extends Node{
         currentPayoff = reward;
 
 
-
+        // 6：TODO 更新 Coordination Set
         // TODO: 规定 < 10 为 Random
         if(expId <10){
             selectCoordinationSetWithRandom(expId);
+
+            // TODO: bellowing, 更新 random with decay
+//            if(expId != 0)
+//            updateDeltaWithDecay(expId);
         }
 
-        // 6：TODO 更新 Coordination Set
+
 //        selectCoordinationSet(expId);
         // partner.selectCoordinationSet(expId);
 
 
+    }
+
+    private void updateDeltaWithDecay(int expId){
+        this.randomRate -= Config.deltaRandomRate[type][expId];
     }
 
     private void selectCoordinationSetWithRandom(int expId) {

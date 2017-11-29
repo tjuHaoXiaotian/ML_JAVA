@@ -59,6 +59,7 @@ public class StopThread extends Thread{
             }
 
             // 2：平均收益是否逼近 1
+//            part2 = true;
             part2 = getAvgReward() > 0.98;
 
             if(!part2){
